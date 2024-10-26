@@ -16,6 +16,12 @@ async function start() {
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('/api/docs', app, document)
 
+   app.enableCors({
+    origin: 'http://localhost:3000',
+    methods: 'GET,POST,PUT,DELETE', // Разрешенные методы
+    credentials: true, // Если используете куки или авторизацию
+   })
+
   await app.listen(PORT, () => console.log(`Server started on PORT = ${PORT}`));
 }
 
