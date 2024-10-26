@@ -4,6 +4,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from './modules/database/database.module';
 import { ProfessorsModule } from './modules/professors/professors.module';
+import { GroupModule } from './modules/groups/groups.module';
+import { StudentsModule } from './modules/students/students.module';
 
 @Module({
   controllers: [],
@@ -16,6 +18,8 @@ import { ProfessorsModule } from './modules/professors/professors.module';
     DatabaseModule,
     UsersModule,
     ProfessorsModule,
+    // GroupModule,
+    // StudentsModule
   ],
 })
 export class AppModule {}

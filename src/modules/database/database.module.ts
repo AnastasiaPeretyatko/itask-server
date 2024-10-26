@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { Group } from 'src/models/group.model';
 import { Professor } from 'src/models/professor.model';
+import { Student } from 'src/models/student.model';
+import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
 
 @Module({
@@ -13,9 +16,9 @@ import { User } from 'src/models/user.model';
         host: configService.get('POSTGRES_HOST'),
         port: +configService.get<number>('POSTGRES_PORT'),
         username: configService.get('POSTGRES_USERNAME'),
-        password: 'user',
+        password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        models: [User, Professor],
+        models: [User, Professor, Group, University, Student],
         autoLoadModels: true,
         synchronize: false,
       }),
