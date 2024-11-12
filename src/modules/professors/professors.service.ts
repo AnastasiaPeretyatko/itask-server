@@ -48,7 +48,10 @@ export class ProfessorsService {
     await user.update(dto);
     await user.save();
 
-    return await this.getOne(user.id);
+    return {
+      data: await this.getOne(user.id),
+      message: 'Преподаватель успешно обновлен',
+    };
   }
 
   async getAll(query: GetProfessorsDto) {
@@ -61,9 +64,12 @@ export class ProfessorsService {
             Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
               [Op.like]: `%${search.toLowerCase()}%`,
             }),
-            Sequelize.where(Sequelize.fn('lower', Sequelize.col('user.email')), {
-              [Op.like]: `%${search.toLowerCase()}%`,
-            }),
+            Sequelize.where(
+              Sequelize.fn('lower', Sequelize.col('user.email')),
+              {
+                [Op.like]: `%${search.toLowerCase()}%`,
+              },
+            ),
           ],
         }
       : {};
