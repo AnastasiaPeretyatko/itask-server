@@ -18,7 +18,7 @@ async function start() {
 
    app.enableCors({
     origin: 'http://localhost:3000',
-    methods: 'GET,POST,PUT,DELETE', // Разрешенные методы
+    methods: 'GET,POST,PUT,PATCH,DELETE', // Разрешенные методы
     credentials: true, // Если используете куки или авторизацию
    })
 
