@@ -17,6 +17,7 @@ import { UsersService } from '../users/users.service';
 import { UpdateProfessorDto } from './dto/update-professor';
 import { GetProfessorsDto } from './dto/get-professor';
 import { Response } from 'express';
+import { ROLE } from 'src/common/enum/role';
 
 @ApiTags('Преподаватели')
 @Controller('professors')
@@ -28,7 +29,7 @@ export class ProfessorsController {
 
   @Post()
   async create(@Res() res: Response, @Body() dto: CreateProfessorDto) {
-    const user = await this.usersService.create(dto.email, dto.role);
+    const user = await this.usersService.create(dto.email, ROLE.PROFESSOR);
     const data = await this.professorsService.create(user.id, dto.fullName);
     return res.status(HttpStatus.OK).send(data)
   }
