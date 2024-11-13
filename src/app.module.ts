@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from './modules/database/database.module';
 import { ProfessorsModule } from './modules/professors/professors.module';
 import { UniversitiesModule } from './modules/universities/universities.module';
+import { GroupModule } from './modules/groups/groups.module';
 
 @Module({
   controllers: [],
@@ -18,6 +19,7 @@ import { UniversitiesModule } from './modules/universities/universities.module';
     UsersModule,
     ProfessorsModule,
     UniversitiesModule,
+    GroupModule
   ],
 })
 export class AppModule {}
