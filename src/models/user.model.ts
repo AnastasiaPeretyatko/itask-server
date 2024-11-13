@@ -1,7 +1,6 @@
 import { Column, DataType, HasOne, Model, Table } from 'sequelize-typescript';
 import { Professor } from './professor.model';
 import * as bcrypt from 'bcrypt';
-import { Student } from './student.model';
 
 @Table({ tableName: 'users' })
 export class User extends Model<User> {
@@ -33,12 +32,6 @@ export class User extends Model<User> {
     as: 'professor',
   })
   professor: Professor;
-
-  @HasOne(() => Student, {
-    foreignKey: 'user_id',
-    as: 'student',
-  })
-  student: Student;
 
   static async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 10);

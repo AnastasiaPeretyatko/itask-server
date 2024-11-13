@@ -1,5 +1,4 @@
-import { Column, DataType, HasOne, Model, Table } from 'sequelize-typescript';
-import { Group } from './group.model';
+import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table({ tableName: 'university' })
 export class University extends Model<University> {
@@ -13,10 +12,4 @@ export class University extends Model<University> {
 
   @Column({ type: DataType.ENUM('ИКТИБ', 'ИРТСУ', 'ИНЭП', 'ИУЭС') })
   name: string;
-
-  @HasOne(() => Group, {
-    foreignKey: 'university_id',
-    as: 'university',
-  })
-  group: Group;
 }
