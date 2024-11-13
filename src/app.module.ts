@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from './modules/database/database.module';
 import { ProfessorsModule } from './modules/professors/professors.module';
+import { UniversitiesModule } from './modules/universities/universities.module';
 
 @Module({
   controllers: [],
@@ -16,6 +17,7 @@ import { ProfessorsModule } from './modules/professors/professors.module';
     DatabaseModule,
     UsersModule,
     ProfessorsModule,
+    UniversitiesModule,
   ],
 })
 export class AppModule {}
