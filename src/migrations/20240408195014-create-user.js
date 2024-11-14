@@ -1,9 +1,6 @@
 'use strict';
 
-const { v4: UUIDV4 } = require('uuid');
-
 /** @type {import('sequelize-cli').Migration} */
-
 
 module.exports = {
   async up(queryInterface, Sequelize) {
