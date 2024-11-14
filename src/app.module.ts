@@ -6,6 +6,7 @@ import { DatabaseModule } from './modules/database/database.module';
 import { ProfessorsModule } from './modules/professors/professors.module';
 import { UniversitiesModule } from './modules/universities/universities.module';
 import { GroupModule } from './modules/groups/groups.module';
+import { StudentsModule } from './modules/students/students.module';
 
 @Module({
   controllers: [],
@@ -19,7 +20,8 @@ import { GroupModule } from './modules/groups/groups.module';
     UsersModule,
     ProfessorsModule,
     UniversitiesModule,
-    GroupModule
+    GroupModule,
+    StudentsModule,
   ],
 })
 export class AppModule {}
