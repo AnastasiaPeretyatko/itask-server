@@ -11,7 +11,10 @@ import { GetAllGroup } from './dto/get-groups.dto';
 
 @Injectable()
 export class GroupsService {
-  constructor(@InjectModel(Group) private groupRepository: typeof Group) {}
+  constructor(
+    @InjectModel(Group) private groupRepository: typeof Group,
+    @InjectModel(University) private universityRepository: typeof University,
+  ) {}
 
   async getOne(id: string) {
     const group = await this.groupRepository.findOne({
@@ -35,7 +38,19 @@ export class GroupsService {
   }
 
   async create(dto: CreateGroupDto) {
-    const group = await this.groupRepository.create(dto);
+    const university = await this.universityRepository.findByPk(
+      dto.universityId,
+    );
+
+    if (!university) throw ApiException.badRequest('Университет не найден');
+
+    const group = await this.groupRepository.create({
+      universityId: dto.universityId,
+      degree: dto.degree,
+      educationMode: dto.educationMode,
+      course: dto.course,
+      groupNumber: dto.groupNumber,
+    });
 
     return this.getOne(group.id);
   }
@@ -54,19 +69,13 @@ export class GroupsService {
   async getAll(query: GetAllGroup) {
     const { search } = query;
 
-    const whereConditions = search
-      ? Sequelize.where(Sequelize.fn('lower', Sequelize.col('groupCode')), {
-          [Op.like]: `%${search.toLowerCase()}%`,
-        })
-      : {};
-
     const groups = await this.groupRepository.findAll({
       include: [
         {
           model: University,
           as: 'university',
         },
-      ]
+      ],
     });
 
     const filteredGroups = search
