@@ -23,10 +23,8 @@ import { GroupsService } from './groups.service';
 export class GroupsController {
   constructor(private groupsService: GroupsService) {}
 
-  @ApiOperation({ summary: 'Создание группы' })
-  @ApiResponse({ status: 200, type: Group })
   @Post()
-  create(@Body() dto: CreateGroupDto) {
+  async create(@Body() dto: CreateGroupDto) {
     return this.groupsService.create(dto);
   }
 
@@ -43,6 +41,12 @@ export class GroupsController {
   @Get()
   async getAllGroups(@Res() res: Response, @Query() query: GetAllGroup){
     const data = await this.groupsService.getAll(query)
+    return res.status(HttpStatus.OK).send(data)
+  }
+
+  @Get('/:id')
+  async getOneGroup(@Res() res: Response, @Param('id', ParseUUIDPipe) id: string){
+    const data = await this.groupsService.getOne(id)
     return res.status(HttpStatus.OK).send(data)
   }
 }
