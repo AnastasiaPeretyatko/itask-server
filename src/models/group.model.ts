@@ -4,6 +4,7 @@ import {
   CreatedAt,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   Table,
   UpdatedAt,
@@ -11,6 +12,7 @@ import {
 import { Degree } from 'src/common/enum/degree';
 import { EducationMode } from 'src/common/enum/education-mode';
 import { University } from './university.model';
+import { Student } from './student.model';
 
 @Table({ tableName: 'groups' })
 export class Group extends Model<Group> {
@@ -73,10 +75,10 @@ export class Group extends Model<Group> {
   groupCode: string;
 
   @CreatedAt
-  created_at: Date
+  created_at: Date;
 
   @UpdatedAt
-  updated_at: Date
+  updated_at: Date;
 
   @BelongsTo(() => University, {
     foreignKey: 'university_id',
@@ -84,4 +86,7 @@ export class Group extends Model<Group> {
     as: 'university',
   })
   university: University;
+
+  @HasMany(() => Student)
+  students: Student[];
 }
