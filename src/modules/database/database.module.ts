@@ -4,7 +4,8 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
 import { Professor } from 'src/models/professor.model';
-import { Semester } from 'src/models/semestr.model';
+import { SemesterGroup } from 'src/models/semester-group.model';
+import { Semester } from 'src/models/semester.model';
 import { Student } from 'src/models/student.model';
 import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
@@ -20,7 +21,16 @@ import { User } from 'src/models/user.model';
         username: configService.get('POSTGRES_USERNAME'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DATABASE'),
-        models: [User, Professor, University, Group, Student, Course, Semester],
+        models: [
+          User,
+          Professor,
+          University,
+          Group,
+          Student,
+          Course,
+          Semester,
+          SemesterGroup,
+        ],
         autoLoadModels: true,
         synchronize: false,
       }),

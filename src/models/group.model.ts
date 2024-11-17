@@ -1,5 +1,6 @@
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
   CreatedAt,
   DataType,
@@ -13,6 +14,8 @@ import { Degree } from 'src/common/enum/degree';
 import { EducationMode } from 'src/common/enum/education-mode';
 import { University } from './university.model';
 import { Student } from './student.model';
+import { Semester } from './semester.model';
+import { SemesterGroup } from './semester-group.model';
 
 @Table({ tableName: 'groups' })
 export class Group extends Model<Group> {
@@ -42,6 +45,9 @@ export class Group extends Model<Group> {
 
   @Column({ type: DataType.INTEGER, field: 'group_number' })
   groupNumber: number;
+
+  @Column({type: DataType.BOOLEAN, field: 'is_active', defaultValue: true})
+  isActive: boolean
 
   @Column({
     type: DataType.VIRTUAL,
@@ -89,4 +95,7 @@ export class Group extends Model<Group> {
 
   @HasMany(() => Student)
   students: Student[];
+
+  @BelongsToMany(() => Semester, () => SemesterGroup)
+  semestrs: Semester[];
 }

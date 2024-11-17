@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { Semester } from 'src/models/semestr.model';
-import { CreateSemestrDto } from './dto/create-semestr.dto';
+import { Semester } from 'src/models/semester.model';
+import { CreateSemestrDto } from './dto/create-semester.dto';
+import { Group } from 'src/models/group.model';
 
 @Injectable()
 export class SemestrsService {
   constructor(
     @InjectModel(Semester) private semestrsRepository: typeof Semester,
+    @InjectModel(Group) private groupRepository: typeof Group,
   ) {}
 
   async getOne(id: string) {
@@ -20,6 +22,12 @@ export class SemestrsService {
 
   async create(dto: CreateSemestrDto) {
     const semestr = await this.semestrsRepository.create(dto);
+
+    const activeGroups = await this.groupRepository.findAll({
+      where: { isActive: true },
+    });
+
+    await semestr.$add('groups', activeGroups);
 
     return {
       data: semestr,
