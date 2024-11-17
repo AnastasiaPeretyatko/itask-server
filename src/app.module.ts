@@ -8,8 +8,8 @@ import { UniversitiesModule } from './modules/universities/universities.module';
 import { GroupModule } from './modules/groups/groups.module';
 import { StudentsModule } from './modules/students/students.module';
 import { CoursesModule } from './modules/courses/courses.module';
-import { Semester } from './models/semestr.model';
-import { SemestersModule } from './modules/semestrs/semestrs.module';
+import { SemestersModule } from './modules/semesters/semesters.module';
+import { SemesterGroupModule } from './modules/semester-group/semester-group.module';
 
 @Module({
   controllers: [],
@@ -26,7 +26,8 @@ import { SemestersModule } from './modules/semestrs/semestrs.module';
     GroupModule,
     StudentsModule,
     CoursesModule,
-    SemestersModule
+    SemestersModule,
+    SemesterGroupModule
   ],
 })
 export class AppModule {}
