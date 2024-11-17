@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { SemestrsService } from './semestrs.service';
-import { CreateSemestrDto } from './dto/create-semestr.dto';
+import { SemestrsService } from './semesters.service';
+import { CreateSemestrDto } from './dto/create-semester.dto';
 
 @ApiTags('Семестры')
 @Controller('semesters')
