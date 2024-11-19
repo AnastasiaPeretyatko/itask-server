@@ -13,24 +13,24 @@ export class SemestrsService {
   ) {}
 
   async getOne(id: string) {
-    const semestr = await this.semestrsRepository.findByPk(id);
+    const semester = await this.semestrsRepository.findByPk(id);
 
-    if (!semestr) throw ApiException.notFound('Семестр не найден');
+    if (!semester) throw ApiException.notFound('Семестр не найден');
 
-    return semestr;
+    return semester;
   }
 
   async create(dto: CreateSemestrDto) {
-    const semestr = await this.semestrsRepository.create(dto);
+    const semester = await this.semestrsRepository.create(dto);
 
     const activeGroups = await this.groupRepository.findAll({
       where: { isActive: true },
     });
 
-    await semestr.$add('groups', activeGroups);
+    await semester.$add('groups', activeGroups);
 
     return {
-      data: semestr,
+      data: semester,
       message: {
         title: 'Семестр успешно создан',
         description: '',
@@ -39,12 +39,12 @@ export class SemestrsService {
   }
 
   async update(id: string, dto: CreateSemestrDto) {
-    const semestr = await this.getOne(id);
+    const semester = await this.getOne(id);
 
-    if (!semestr) throw ApiException.notFound('Семестр не найден');
+    if (!semester) throw ApiException.notFound('Семестр не найден');
 
-    await semestr.update(dto);
-    await semestr.save();
+    await semester.update(dto);
+    await semester.save();
 
     return {
       data: await this.getOne(id),
@@ -56,24 +56,24 @@ export class SemestrsService {
   }
 
   async delete(id: string) {
-    const semestr = await this.getOne(id);
+    const semester = await this.getOne(id);
 
-    if (!semestr) throw ApiException.notFound('Семестр не найден');
+    if (!semester) throw ApiException.notFound('Семестр не найден');
 
-    await semestr.destroy();
+    await semester.destroy();
 
     return { message: 'Семестр успешно удален' };
   }
 
   async getAll() {
-    const { count, rows: semestrs } =
+    const { count, rows: semesters } =
       await this.semestrsRepository.findAndCountAll();
 
-    if (!semestrs || !semestrs.length)
+    if (!semesters || !semesters.length)
       throw ApiException.notFound('Семестры не найдены');
 
     return {
-      data: semestrs,
+      data: semesters,
       count,
     };
   }
