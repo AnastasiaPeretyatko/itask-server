@@ -10,6 +10,7 @@ import { StudentsModule } from './modules/students/students.module';
 import { CoursesModule } from './modules/courses/courses.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { SemesterGroupModule } from './modules/semester-group/semester-group.module';
+import { SemesterGroupCourseModule } from './modules/semester-group-course/semester-group-course.module';
 
 @Module({
   controllers: [],
@@ -27,7 +28,8 @@ import { SemesterGroupModule } from './modules/semester-group/semester-group.mod
     StudentsModule,
     CoursesModule,
     SemestersModule,
-    SemesterGroupModule
+    SemesterGroupModule,
+    SemesterGroupCourseModule,
   ],
 })
 export class AppModule {}
