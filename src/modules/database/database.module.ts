@@ -4,6 +4,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
 import { Professor } from 'src/models/professor.model';
+import { SemesterGroupCourse } from 'src/models/semester-group-course.model';
 import { SemesterGroup } from 'src/models/semester-group.model';
 import { Semester } from 'src/models/semester.model';
 import { Student } from 'src/models/student.model';
@@ -30,6 +31,7 @@ import { User } from 'src/models/user.model';
           Course,
           Semester,
           SemesterGroup,
+          SemesterGroupCourse,
         ],
         autoLoadModels: true,
         synchronize: false,
