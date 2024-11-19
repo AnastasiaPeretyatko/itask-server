@@ -1,4 +1,5 @@
 import {
+  BelongsToMany,
   Column,
   CreatedAt,
   DataType,
@@ -6,6 +7,8 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { SemesterGroup } from './semester-group.model';
+import { SemesterGroupCourse } from './semester-group-course.model';
 
 @Table({ tableName: 'courses' })
 export class Course extends Model<Course> {
@@ -28,5 +31,8 @@ export class Course extends Model<Course> {
 
   @UpdatedAt
   updatedAt: Date;
+
+  @BelongsToMany(() => SemesterGroup, () => SemesterGroupCourse, 'course_id', 'semester_group_id')
+  semesterGroups: SemesterGroup[];
 }
 
