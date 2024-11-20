@@ -1,4 +1,5 @@
 import {
+  BelongsTo,
   BelongsToMany,
   Column,
   DataType,
@@ -37,4 +38,10 @@ export class SemesterGroup extends Model<SemesterGroup> {
 
   @BelongsToMany(() => Course, () => SemesterGroupCourse, 'semester_group_id', 'course_id')
   courses: Course[];
+
+  @BelongsTo(() => Semester, 'semester_id')
+  semester: Semester;
+
+  @BelongsTo(() => Group, 'group_id')
+  group: Group;
 }

@@ -3,11 +3,13 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
 import { User } from './user.model';
 import { Group } from './group.model';
+import { Task } from './tasks.model';
 
 @Table({ tableName: 'students' })
 export class Student extends Model<Student> {
@@ -46,4 +48,7 @@ export class Student extends Model<Student> {
     as: 'user',
   })
   user: User;
+
+  @HasMany(() => Task)
+  tasks: Task[];
 }
