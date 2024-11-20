@@ -3,10 +3,12 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
 import { User } from './user.model';
+import { Task } from './tasks.model';
 
 @Table({ tableName: 'professors' })
 export class Professor extends Model<Professor> {
@@ -37,4 +39,7 @@ export class Professor extends Model<Professor> {
     as: 'user',
   })
   user: User;
+
+  @HasMany(() => Task)
+  tasks: Task[];
 }

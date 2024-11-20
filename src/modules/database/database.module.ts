@@ -8,6 +8,7 @@ import { SemesterGroupCourse } from 'src/models/semester-group-course.model';
 import { SemesterGroup } from 'src/models/semester-group.model';
 import { Semester } from 'src/models/semester.model';
 import { Student } from 'src/models/student.model';
+import { Task } from 'src/models/tasks.model';
 import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
 
@@ -32,6 +33,7 @@ import { User } from 'src/models/user.model';
           Semester,
           SemesterGroup,
           SemesterGroupCourse,
+          Task,
         ],
         autoLoadModels: true,
         synchronize: false,
