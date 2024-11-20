@@ -3,11 +3,13 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
 import { Course } from './courses.model';
 import { SemesterGroup } from './semester-group.model';
+import { Task } from './tasks.model';
 
 @Table({ tableName: 'semester_group_course' })
 export class SemesterGroupCourse extends Model<SemesterGroupCourse> {
@@ -38,4 +40,7 @@ export class SemesterGroupCourse extends Model<SemesterGroupCourse> {
 
   @BelongsTo(() => Course, 'course_id')
   course: Course;
+
+  @HasMany(() => Task)
+  tasks: Task[];
 }
