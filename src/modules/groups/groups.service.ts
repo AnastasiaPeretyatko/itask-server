@@ -69,7 +69,7 @@ export class GroupsService {
   async getAll(query: GetAllGroup) {
     const { search } = query;
 
-    const groups = await this.groupRepository.findAll({
+    const { rows: groups, count } = await this.groupRepository.findAndCountAll({
       include: [
         {
           model: University,
@@ -84,6 +84,6 @@ export class GroupsService {
         )
       : groups;
 
-    return filteredGroups;
+    return { data: filteredGroups, count };
   }
 }
