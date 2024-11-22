@@ -49,8 +49,6 @@ export class StudentsService {
       group: { id: student.group.id, groupCode: student.group?.groupCode },
     };
 
-    delete newStudent.group;
-
     return newStudent;
   }
 
@@ -90,7 +88,7 @@ export class StudentsService {
         }
       : {};
 
-    const data = await this.studentRepository.findAll({
+    const { rows: data, count } = await this.studentRepository.findAndCountAll({
       attributes: {
         exclude: ['createdAt', 'updatedAt', 'user_id', 'group_id'],
       },
@@ -128,7 +126,10 @@ export class StudentsService {
       return { ...studentObj, group };
     });
 
-    return students;
+    return {
+      data: students,
+      count,
+    };
   }
 
   async update(id: string, dto: CreateStudentDto) {
