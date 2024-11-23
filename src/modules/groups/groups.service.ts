@@ -14,11 +14,11 @@ export class GroupsService {
   constructor(
     @InjectModel(Group) private groupRepository: typeof Group,
     @InjectModel(University) private universityRepository: typeof University,
-  ) {}
+  ) { }
 
   async getOne(id: string) {
     const group = await this.groupRepository.findOne({
-      attributes: { exclude: ['university_id'] },
+      // attributes: { },
       where: { id },
       include: [
         {
@@ -26,13 +26,11 @@ export class GroupsService {
           as: 'university',
         },
       ],
-      raw: false, // Keep nested object structure for included models
-      nest: true, // Allows nesting of include models in plain objects
     });
 
     // Удаляем ключ university из объекта group
     const plainGroup = group.get({ plain: true });
-    delete plainGroup.university; // Удаляем ключ
+    // delete plainGroup.university; // Удаляем ключ
 
     return plainGroup;
   }
@@ -52,7 +50,13 @@ export class GroupsService {
       groupNumber: dto.groupNumber,
     });
 
-    return this.getOne(group.id);
+    return {
+      data: await this.getOne(group.id),
+      message: {
+        title: 'Группа успешно создана',
+        description: '',
+      },
+    }
   }
 
   async update(id: string, dto: UpdateGroupDto) {
@@ -63,7 +67,13 @@ export class GroupsService {
     group.update(dto);
     group.save();
 
-    return this.getOne(id);
+    return {
+      data: await this.getOne(id),
+      message: {
+        title: 'Группа успешно обновлена',
+        description: '',
+      },
+    };
   }
 
   async getAll(query: GetAllGroup) {
@@ -80,10 +90,33 @@ export class GroupsService {
 
     const filteredGroups = search
       ? groups.filter((group) =>
-          group.groupCode.toLowerCase().includes(search.toLowerCase()),
-        )
+        group.groupCode.toLowerCase().includes(search.toLowerCase()),
+      )
       : groups;
 
     return { data: filteredGroups, count };
+  }
+
+  async getGroupNameAndId(search: string) {
+    const groups = await this.groupRepository.findAll({
+      where: { isActive: true },
+      include: [
+        {
+          model: University,
+          as: 'university',
+        },
+      ]
+    });
+
+    const filteredGroups = search 
+      ? groups.filter((group) => group.groupCode.toLowerCase().includes(search.toLowerCase())) 
+      : groups;
+
+    const result = filteredGroups.map((group) => ({
+      id: group.id,
+      name: group.groupCode,
+    }));
+
+    return result;
   }
 }
