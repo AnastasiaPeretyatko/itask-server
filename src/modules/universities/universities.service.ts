@@ -9,8 +9,10 @@ export class UniversitiesService {
   ) {}
 
   async getAll() {
-    return await this.universitiesRepository.findAll({
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
-    });
+    const universities = await this.universitiesRepository.findAll(
+      {attributes: { exclude: ['createdAt', 'updatedAt'] },}
+    );
+    
+    return universities;
   }
 }

@@ -43,6 +43,12 @@ export class GroupsController {
     return res.status(HttpStatus.OK).send(data);
   }
 
+  @Get('/groups.name')
+  async getGroupNameAndId(@Res() res: Response, @Query() query: GetAllGroup) {
+    const data = await this.groupsService.getGroupNameAndId(query.search);
+    return res.status(HttpStatus.OK).send(data);
+  }
+
   @Get('/:id')
   async getOneGroup(
     @Res() res: Response,
