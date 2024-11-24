@@ -43,6 +43,12 @@ export class GroupsController {
     return res.status(HttpStatus.OK).send(data);
   }
 
+  @Get('/groups.id')
+  async getAllGroupId(@Res() res: Response) {
+    const data = await this.groupsService.getAllGroupId();
+    return res.status(HttpStatus.OK).send(data);
+  }
+
   @Get('/groups.name')
   async getGroupNameAndId(@Res() res: Response, @Query() query: GetAllGroup) {
     const data = await this.groupsService.getGroupNameAndId(query.search);
@@ -55,6 +61,12 @@ export class GroupsController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     const data = await this.groupsService.getOne(id);
+    return res.status(HttpStatus.OK).send(data);
+  }
+
+  @Get('/:id/students')
+  async getStudentsByGroup(@Res() res: Response, @Param('id') id: string) {
+    const data = await this.groupsService.getStudentsByGroup(id); 
     return res.status(HttpStatus.OK).send(data);
   }
 }
