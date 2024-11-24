@@ -4,16 +4,18 @@ import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { Group } from 'src/models/group.model';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { Sequelize } from 'sequelize';
-import { Op } from 'sequelize';
 import { University } from 'src/models/university.model';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GetAllGroup } from './dto/get-groups.dto';
+import { Student } from 'src/models/student.model';
+import { User } from 'src/models/user.model';
 
 @Injectable()
 export class GroupsService {
   constructor(
     @InjectModel(Group) private groupRepository: typeof Group,
     @InjectModel(University) private universityRepository: typeof University,
+    @InjectModel(Student) private studentsRepository: typeof Student,
   ) { }
 
   async getOne(id: string) {
@@ -108,8 +110,8 @@ export class GroupsService {
       ]
     });
 
-    const filteredGroups = search 
-      ? groups.filter((group) => group.groupCode.toLowerCase().includes(search.toLowerCase())) 
+    const filteredGroups = search
+      ? groups.filter((group) => group.groupCode.toLowerCase().includes(search.toLowerCase()))
       : groups;
 
     const result = filteredGroups.map((group) => ({
@@ -118,5 +120,35 @@ export class GroupsService {
     }));
 
     return result;
+  }
+
+  async getAllGroupId() {
+    const groups = await this.groupRepository.findAll({
+      // where: { isActive: true },
+      include: [
+        {
+          model: University,
+          as: 'university',
+        },
+      ]
+    });
+    const data = groups.map(el => ({ id: el.id }));
+
+    return data
+  }
+
+  async getStudentsByGroup(id: string) {
+    const group = await this.getOne(id);
+
+    if (!group) throw ApiException.notFound('Группа не найдена');
+
+    const students = await this.studentsRepository.findAll({
+      where: { group_id: id },
+      include: [
+        { model: Group, as: 'group', include: [{ model: University, as: 'university' }] },
+        { model: User, as: 'user' },
+      ]
+    });
+    return students;
   }
 }
