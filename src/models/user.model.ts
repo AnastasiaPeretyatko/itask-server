@@ -36,4 +36,8 @@ export class User extends Model<User> {
   static async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 10);
   }
+
+  static async comparePassword(password: string, user: User): Promise<boolean> {
+    return await bcrypt.compare(password, user.password);
+  }
 }
