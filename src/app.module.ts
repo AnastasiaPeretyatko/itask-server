@@ -12,6 +12,7 @@ import { SemestersModule } from './modules/semesters/semesters.module';
 import { SemesterGroupModule } from './modules/semester-group/semester-group.module';
 import { SemesterGroupCourseModule } from './modules/semester-group-course/semester-group-course.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   controllers: [],
@@ -32,6 +33,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
     SemesterGroupModule,
     SemesterGroupCourseModule,
     TasksModule,
+    AuthModule
   ],
 })
 export class AppModule {}
