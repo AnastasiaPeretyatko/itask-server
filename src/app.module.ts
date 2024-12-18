@@ -13,6 +13,7 @@ import { SemesterGroupModule } from './modules/semester-group/semester-group.mod
 import { SemesterGroupCourseModule } from './modules/semester-group-course/semester-group-course.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ProfessorCourseModule } from './modules/professor-course.ts/professor-course.module';
 
 @Module({
   controllers: [],
@@ -33,7 +34,8 @@ import { AuthModule } from './modules/auth/auth.module';
     SemesterGroupModule,
     SemesterGroupCourseModule,
     TasksModule,
-    AuthModule
+    AuthModule,
+    ProfessorCourseModule,
   ],
 })
 export class AppModule {}
