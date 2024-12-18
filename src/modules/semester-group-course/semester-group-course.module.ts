@@ -10,5 +10,6 @@ import { Course } from 'src/models/courses.model';
   controllers: [SemesterGroupCourseController],
   providers: [SemesterGroupCourseService],
   imports: [SequelizeModule.forFeature([SemesterGroupCourse, SemesterGroup, Course])],
+  exports: [SemesterGroupCourseService],
 })
 export class SemesterGroupCourseModule {}

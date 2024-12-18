@@ -52,4 +52,10 @@ export class SemestersController {
     const semestr = await this.semestrsService.getOne(id);
     return res.status(HttpStatus.OK).send(semestr);
   }
+
+  @Get('/name')
+  async getAllOnSearch(@Res() res: Response, @Param('name') search: string) {
+    const semesters = await this.semestrsService.getAllOnSearch(search);
+    return res.status(HttpStatus.OK).send(semesters);
+  }
 }
