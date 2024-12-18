@@ -83,4 +83,35 @@ export class ProfessorsService {
 
     return data;
   }
+
+  async getProfessorName(search: string) {
+    const whereConditions = search
+      ? {
+          [Op.or]: [
+            Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
+              [Op.like]: `%${search.toLowerCase()}%`,
+            }),
+            Sequelize.where(
+              Sequelize.fn('lower', Sequelize.col('user.email')),
+              {
+                [Op.like]: `%${search.toLowerCase()}%`,
+              },
+            ),
+          ],
+        }
+      : {};
+
+    const professors = await this.professorRepository.findAll({
+      where: whereConditions,
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['email'],
+        },
+      ],
+    });
+
+    return professors.map((el) => ({ id: el.id, name: el.fullName }));
+  }
 }
