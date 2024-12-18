@@ -1,5 +1,6 @@
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
   DataType,
   ForeignKey,
@@ -10,6 +11,8 @@ import {
 import { Course } from './courses.model';
 import { SemesterGroup } from './semester-group.model';
 import { Task } from './tasks.model';
+import { Professor } from './professor.model';
+import { ProfessorCourse } from './professor-course.model';
 
 @Table({ tableName: 'semester_group_course' })
 export class SemesterGroupCourse extends Model<SemesterGroupCourse> {
@@ -43,4 +46,7 @@ export class SemesterGroupCourse extends Model<SemesterGroupCourse> {
 
   @HasMany(() => Task)
   tasks: Task[];
+
+  @BelongsToMany(() => Professor, () => ProfessorCourse)
+  professors: Professor[];
 }

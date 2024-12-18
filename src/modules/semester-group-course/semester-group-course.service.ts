@@ -1,3 +1,4 @@
+import { group } from 'console';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
@@ -101,5 +102,26 @@ export class SemesterGroupCourseService {
     };
 
     return subjects;
+  }
+
+  async getById(courseId, groupId, semesterId) {
+    const data = await this.semesterGroupCourseRepository.findOne({
+      include: [
+        {
+          model: Course,
+          as: 'course',
+          where: { id: courseId },
+        },
+        {
+          model: SemesterGroup,
+          as: 'semesterGroup',
+          where: { groupId, semesterId },
+        },
+      ],
+    });
+
+    if(!data) throw ApiException.notFound('Предмет не найден у группы в этом семестре');
+
+    return data.id;
   }
 }

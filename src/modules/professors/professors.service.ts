@@ -61,9 +61,12 @@ export class ProfessorsService {
             Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
               [Op.like]: `%${search.toLowerCase()}%`,
             }),
-            Sequelize.where(Sequelize.fn('lower', Sequelize.col('user.email')), {
-              [Op.like]: `%${search.toLowerCase()}%`,
-            }),
+            Sequelize.where(
+              Sequelize.fn('lower', Sequelize.col('user.email')),
+              {
+                [Op.like]: `%${search.toLowerCase()}%`,
+              },
+            ),
           ],
         }
       : {};

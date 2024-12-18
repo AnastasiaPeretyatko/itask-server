@@ -4,6 +4,7 @@ import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { Semester } from 'src/models/semester.model';
 import { CreateSemestrDto } from './dto/create-semester.dto';
 import { Group } from 'src/models/group.model';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class SemestrsService {
@@ -77,4 +78,14 @@ export class SemestrsService {
       count,
     };
   }
+
+  getAllOnSearch = async (search: string) => {
+    const semesters = await this.semestrsRepository.findAll({
+      where: {
+        name: { [Op.like]: `%${search}%` },
+      },
+    });
+
+    return semesters.map((el) => ({ id: el.id, name: el.name }));
+  };
 }
