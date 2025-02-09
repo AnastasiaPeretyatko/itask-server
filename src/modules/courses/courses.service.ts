@@ -3,10 +3,18 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Course } from 'src/models/courses.model';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { SemesterGroupCourse } from 'src/models/semester-group-course.model';
+import { SemesterGroup } from 'src/models/semester-group.model';
+import { Group } from 'src/models/group.model';
+import { University } from 'src/models/university.model';
 
 @Injectable()
 export class CoursesService {
-  constructor(@InjectModel(Course) private courseRepository: typeof Course) {}
+  constructor(
+    @InjectModel(Course) private courseRepository: typeof Course,
+    @InjectModel(SemesterGroupCourse)
+    private semesterGroupCourseRepository: typeof SemesterGroupCourse,
+  ) {}
 
   async getOne(id: string) {
     const course = await this.courseRepository.findByPk(id);
@@ -58,4 +66,63 @@ export class CoursesService {
       count,
     };
   }
+
+  getAllFromSemesterGroup = async (semesterId: string, groupId: string) => {
+    const courses = await this.semesterGroupCourseRepository.findAll({
+      attributes: [],
+      include: [
+        {
+          model: Course,
+          as: 'course',
+        },
+        {
+          model: SemesterGroup,
+          as: 'semesterGroup',
+          attributes: [],
+          required: true,
+          where: { groupId, semesterId },
+        },
+      ],
+    });
+
+    if (!courses) throw ApiException.notFound('Курсы не найдены');
+
+    return courses;
+  };
+
+  // Получение списка курсов у преподавателя
+  getAllFromProfessor = async (semesterId: string, professorId: string) => {
+    console.log(semesterId);
+    const courses = await this.courseRepository.findAll({
+      include: [
+        {
+          model: SemesterGroup,
+          as: 'semesterGroups',
+          where: { semesterId },
+          attributes: [],
+          through: {
+            attributes: [],
+          },
+          include: [
+            {
+              model: Group,
+              as: 'group',
+              include: [
+                {
+                  model: University,
+                  as: 'university',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    return courses;
+  };
+
+  getAllGroupByCourse = async () => {
+    const groups = await this.courseRepository.findAll({});
+  };
 }

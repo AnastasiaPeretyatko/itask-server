@@ -5,12 +5,20 @@ import { Semester } from 'src/models/semester.model';
 import { CreateSemestrDto } from './dto/create-semester.dto';
 import { Group } from 'src/models/group.model';
 import { Op } from 'sequelize';
+import { SemesterGroup } from 'src/models/semester-group.model';
+import { ROLE } from 'src/common/enum/role';
+import { Professor } from 'src/models/professor.model';
+import { SemesterGroupCourse } from 'src/models/semester-group-course.model';
+import { Course } from 'src/models/courses.model';
 
 @Injectable()
 export class SemestrsService {
   constructor(
     @InjectModel(Semester) private semestrsRepository: typeof Semester,
     @InjectModel(Group) private groupRepository: typeof Group,
+    @InjectModel(SemesterGroup)
+    private semesterGroupRepository: typeof SemesterGroup,
+    @InjectModel(Professor) private professorRepository: typeof Professor,
   ) {}
 
   async getOne(id: string) {
@@ -87,5 +95,66 @@ export class SemestrsService {
     });
 
     return semesters.map((el) => ({ id: el.id, name: el.name }));
+  };
+
+  getListFromGroup = async (id: string) => {
+    const semesters = await this.groupRepository.findOne({
+      where: { id },
+      attributes: ['id'],
+      include: [
+        {
+          model: Semester,
+          as: 'semesters',
+          through: {
+            attributes: [],
+          },
+        },
+      ],
+    });
+
+    return semesters.semesters.map((el) => ({ id: el.id, name: el.name }));
+  };
+
+  getListFromProfessor = async (id: string) => {
+    const semesters = await this.professorRepository.findOne({
+      where: { id },
+      attributes: ['id'],
+      include: [
+        {
+          model: SemesterGroupCourse,
+          as: 'semesterGroupCourses',
+          attributes: ['id'],
+          through: {
+            attributes: [],
+          },
+          include: [
+            {
+              model: SemesterGroup,
+              as: 'semesterGroup',
+              attributes: ['id'],
+              include: [
+                {
+                  model: Semester,
+                  as: 'semester',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    return semesters.semesterGroupCourses.map((el) => ({
+      id: el.semesterGroup.id,
+      name: el.semesterGroup.semester.name,
+    }));
+  };
+
+  getList = async (id: string, role: ROLE) => {
+    if (role === ROLE.PROFESSOR) {
+      return await this.getListFromProfessor(id);
+    } else if (role === ROLE.STUDENT) {
+      return await this.getListFromGroup(id);
+    }
   };
 }

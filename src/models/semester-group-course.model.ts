@@ -44,9 +44,9 @@ export class SemesterGroupCourse extends Model<SemesterGroupCourse> {
   @BelongsTo(() => Course, 'course_id')
   course: Course;
 
+  @BelongsTo(() => ProfessorCourse, 'professor_course_id')
+  professorCourse: ProfessorCourse;
+
   @HasMany(() => Task)
   tasks: Task[];
-
-  @BelongsToMany(() => Professor, () => ProfessorCourse)
-  professors: Professor[];
 }

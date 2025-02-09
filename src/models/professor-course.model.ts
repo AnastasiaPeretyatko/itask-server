@@ -11,6 +11,7 @@ import {
 } from 'sequelize-typescript';
 import { SemesterGroupCourse } from './semester-group-course.model';
 import { Professor } from './professor.model';
+import { Course } from './courses.model';
 
 @Table({ tableName: 'professor_course' })
 export class ProfessorCourse extends Model<ProfessorCourse> {
@@ -42,6 +43,6 @@ export class ProfessorCourse extends Model<ProfessorCourse> {
   @BelongsTo(() => Professor, 'professor_id')
   professor: Professor;
 
-  @BelongsTo(() => SemesterGroupCourse, 'semester_group_course_id')
-  semesterGroupCourse: SemesterGroupCourse;
+  @BelongsToMany(() => Course, () => SemesterGroupCourse, 'professor_course_id', 'course_id')
+  courses: Course[];
 }

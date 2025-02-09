@@ -7,12 +7,14 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { SemestrsService } from './semesters.service';
 import { CreateSemestrDto } from './dto/create-semester.dto';
+import { ROLE } from 'src/common/enum/role';
 
 @ApiTags('Семестры')
 @Controller('semesters')
@@ -53,9 +55,10 @@ export class SemestersController {
     return res.status(HttpStatus.OK).send(semestr);
   }
 
-  @Get('/name')
-  async getAllOnSearch(@Res() res: Response, @Param('name') search: string) {
-    const semesters = await this.semestrsService.getAllOnSearch(search);
+  // Получение списка семестров для группы и для преподователя
+  @Get('list/:id/')
+  async getList(@Res() res: Response, @Param('id') id: string, @Query() query: { role: ROLE }) {
+    const semesters = await this.semestrsService.getList(id, query.role);
     return res.status(HttpStatus.OK).send(semesters);
   }
 }

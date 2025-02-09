@@ -97,5 +97,5 @@ export class Group extends Model<Group> {
   students: Student[];
 
   @BelongsToMany(() => Semester, () => SemesterGroup)
-  semestrs: Semester[];
+  semesters: Semester[];
 }

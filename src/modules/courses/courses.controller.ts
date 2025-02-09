@@ -52,4 +52,30 @@ export class CoursesController {
     const course = await this.coursesService.getOne(id);
     return res.status(HttpStatus.OK).send(course);
   }
+
+  @Get('list/:semesterId/:professorId')
+  async getAllFromProfessor(
+    @Res() res: Response,
+    @Param('semesterId') semesterId: string,
+    @Param('professorId') professorId: string,
+  ) {
+    const courses = await this.coursesService.getAllFromProfessor(
+      semesterId,
+      professorId,
+    );
+    return res.status(HttpStatus.OK).send(courses);
+  }
+
+  @Get('/:semesterId/:groupId')
+  async getAllFromSemesterGroup(
+    @Res() res: Response,
+    @Param('semesterId') semesterId: string,
+    @Param('groupId') groupId: string,
+  ) {
+    const courses = await this.coursesService.getAllFromSemesterGroup(
+      semesterId,
+      groupId,
+    );
+    return res.status(HttpStatus.OK).send(courses);
+  }
 }
