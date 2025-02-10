@@ -3,23 +3,61 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Course } from 'src/models/courses.model';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { Professor } from 'src/models/professor.model';
+import { CourseAssignment } from 'src/models/course_assignment.model';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class CoursesService {
-  constructor(@InjectModel(Course) private courseRepository: typeof Course) {}
+  constructor(
+    @InjectModel(Course) private courseRepository: typeof Course,
+    @InjectModel(Professor) private professorRepository: typeof Professor,
+    @InjectModel(CourseAssignment)
+    private courseAssignmentRepository: typeof CourseAssignment,
+  ) {}
 
   async getOne(id: string) {
     const course = await this.courseRepository.findByPk(id);
 
+    const assignments = await this.courseAssignmentRepository.findAll({
+      where: { course_id: id },
+      include: [
+        {
+          model: Professor,
+          as: 'professors',
+        },
+      ],
+    });
+
     if (!course) throw ApiException.notFound('Курс не найден');
 
-    return course;
+    return {course, assignments};
   }
   async create(dto: CreateCourseDto) {
     const course = await this.courseRepository.create(dto);
 
+    if(dto.professorIds){
+      const teachers = await this.professorRepository.findAll({
+        where: { id: { [Op.in]: dto.professorIds } },
+      });
+  
+      if(!teachers || teachers.length !== dto.professorIds.length) 
+        throw ApiException.badRequest('Преподаватели не найдены');
+  
+      const assignments = teachers.map((teacher) => ({
+        professor_id: teacher.id,
+        course_id: course.id,
+        group_id: null,
+        semester_id: null,
+      }));
+
+      await this.courseAssignmentRepository.bulkCreate(assignments);
+    }
+
+    const data = await this.getOne(course.id);
+
     return {
-      data: course,
+      ...data,
       message: {
         title: 'Курс успешно создан',
         description: '',
@@ -28,7 +66,7 @@ export class CoursesService {
   }
 
   async update(id: string, dto: CreateCourseDto) {
-    const course = await this.getOne(id);
+    const {course} = await this.getOne(id);
 
     if (!course) throw ApiException.notFound('Курс не найден');
 
@@ -39,7 +77,7 @@ export class CoursesService {
   }
 
   async delete(id: string) {
-    const course = await this.getOne(id);
+    const {course} = await this.getOne(id);
 
     if (!course) throw ApiException.notFound('Курс не найден');
 
