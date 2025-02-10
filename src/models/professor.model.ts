@@ -9,6 +9,7 @@ import {
 } from 'sequelize-typescript';
 import { User } from './user.model';
 import { Task } from './tasks.model';
+import { CourseAssignment } from './course_assignment.model';
 
 @Table({ tableName: 'professors' })
 export class Professor extends Model<Professor> {
@@ -42,4 +43,9 @@ export class Professor extends Model<Professor> {
 
   @HasMany(() => Task)
   tasks: Task[];
+
+  // new changes
+
+  @HasMany(() => CourseAssignment)
+  courseAssignments: CourseAssignment[];
 }
