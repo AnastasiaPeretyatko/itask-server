@@ -16,6 +16,7 @@ import { University } from './university.model';
 import { Student } from './student.model';
 import { Semester } from './semester.model';
 import { SemesterGroup } from './semester-group.model';
+import { CourseAssignment } from './course_assignment.model';
 
 @Table({ tableName: 'groups' })
 export class Group extends Model<Group> {
@@ -98,4 +99,9 @@ export class Group extends Model<Group> {
 
   @BelongsToMany(() => Semester, () => SemesterGroup)
   semestrs: Semester[];
+
+  // new changes
+
+  @HasMany(() => CourseAssignment)
+  courseAssignments: CourseAssignment[];
 }

@@ -3,12 +3,14 @@ import {
   Column,
   CreatedAt,
   DataType,
+  HasMany,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
 import { Group } from './group.model';
 import { SemesterGroup } from './semester-group.model';
+import { CourseAssignment } from './course_assignment.model';
 
 @Table({ tableName: 'semesters' })
 export class Semester extends Model<Semester> {
@@ -46,4 +48,9 @@ export class Semester extends Model<Semester> {
 
   @BelongsToMany(() => Group, () => SemesterGroup)
   groups: Group[];
+
+  // new changes
+
+  @HasMany(() => CourseAssignment)
+  courseAssignments: CourseAssignment[];
 }
