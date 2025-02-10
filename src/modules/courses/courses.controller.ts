@@ -13,6 +13,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { Response } from 'express';
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 
 @ApiTags('Курсы')
 @Controller('courses')
@@ -20,7 +21,10 @@ export class CoursesController {
   constructor(private coursesService: CoursesService) {}
 
   @Post()
-  async create(@Res() res: Response, @Body() dto: CreateCourseDto) {
+  async create(
+    @Res() res: Response,
+    @Body(new ZodValidationPipe(CreateCourseDto)) dto: CreateCourseDto,
+  ) {
     const course = await this.coursesService.create(dto);
     return res.status(HttpStatus.OK).send(course);
   }

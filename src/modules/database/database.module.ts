@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { CourseAssignment } from 'src/models/course_assignment.model';
 import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
 import { Professor } from 'src/models/professor.model';
@@ -34,6 +35,7 @@ import { User } from 'src/models/user.model';
           SemesterGroup,
           SemesterGroupCourse,
           Task,
+          CourseAssignment
         ],
         autoLoadModels: true,
         synchronize: false,
