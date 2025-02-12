@@ -2,14 +2,14 @@
   "development": {
     "username": "postgres",
     "password": "user",
-    "database": "itask",
+    "database": "itask1",
     "host": "localhost",
     "dialect": "postgres"
   },
   "production": {
     "username": "postgres",
     "password": "user",
-    "database": "itask",
+    "database": "itask1",
     "host": "localhost",
     "dialect": "postgres"
   }
