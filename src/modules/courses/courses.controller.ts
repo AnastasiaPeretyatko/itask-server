@@ -23,7 +23,7 @@ export class CoursesController {
   @Post()
   async create(
     @Res() res: Response,
-    @Body(new ZodValidationPipe(CreateCourseDto)) dto: CreateCourseDto,
+    @Body() dto: CreateCourseDto,
   ) {
     const course = await this.coursesService.create(dto);
     return res.status(HttpStatus.OK).send(course);

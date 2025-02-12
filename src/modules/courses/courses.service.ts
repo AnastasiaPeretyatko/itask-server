@@ -35,6 +35,8 @@ export class CoursesService {
   }
   async create(dto: CreateCourseDto) {
     const { name, description, professorIds } = dto;
+    console.log({description});
+    // return 'keke'
     const course = await this.courseRepository.create({ name, description });
 
     if (dto.professorIds) {
