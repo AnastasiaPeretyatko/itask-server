@@ -31,19 +31,20 @@ export class CoursesService {
 
     if (!course) throw ApiException.notFound('Курс не найден');
 
-    return {course, assignments};
+    return { course, assignments };
   }
   async create(dto: CreateCourseDto) {
-    const course = await this.courseRepository.create(dto);
+    const { name, description, professorIds } = dto;
+    const course = await this.courseRepository.create({ name, description });
 
-    if(dto.professorIds){
+    if (dto.professorIds) {
       const teachers = await this.professorRepository.findAll({
-        where: { id: { [Op.in]: dto.professorIds } },
+        where: { id: { [Op.in]: professorIds } },
       });
-  
-      if(!teachers || teachers.length !== dto.professorIds.length) 
+
+      if (!teachers || teachers.length !== professorIds.length)
         throw ApiException.badRequest('Преподаватели не найдены');
-  
+
       const assignments = teachers.map((teacher) => ({
         professor_id: teacher.id,
         course_id: course.id,
@@ -66,7 +67,7 @@ export class CoursesService {
   }
 
   async update(id: string, dto: CreateCourseDto) {
-    const {course} = await this.getOne(id);
+    const { course } = await this.getOne(id);
 
     if (!course) throw ApiException.notFound('Курс не найден');
 
@@ -77,11 +78,16 @@ export class CoursesService {
   }
 
   async delete(id: string) {
-    const {course} = await this.getOne(id);
+    const { course } = await this.getOne(id);
 
     if (!course) throw ApiException.notFound('Курс не найден');
 
+    const assignments = await this.courseAssignmentRepository.findAll({
+      where: { course_id: id },
+    });
+
     await course.destroy();
+    assignments.map(async(assignment) => await assignment.destroy());
 
     return { message: 'Курс успешно удален' };
   }
