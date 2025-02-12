@@ -49,4 +49,10 @@ export class ProfessorsController {
     const data = await this.professorsService.getAll(query);
     return res.status(HttpStatus.OK).send(data);
   }
+
+  @Get('/list')
+  async getProfessorsList(@Res() res: Response, @Query() query: {search: string}) {
+    const data = await this.professorsService.list(query.search);
+    return res.status(HttpStatus.OK).send(data);
+  }
 }

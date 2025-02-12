@@ -61,9 +61,12 @@ export class ProfessorsService {
             Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
               [Op.like]: `%${search.toLowerCase()}%`,
             }),
-            Sequelize.where(Sequelize.fn('lower', Sequelize.col('user.email')), {
-              [Op.like]: `%${search.toLowerCase()}%`,
-            }),
+            Sequelize.where(
+              Sequelize.fn('lower', Sequelize.col('user.email')),
+              {
+                [Op.like]: `%${search.toLowerCase()}%`,
+              },
+            ),
           ],
         }
       : {};
@@ -82,5 +85,46 @@ export class ProfessorsService {
     });
 
     return data;
+  }
+
+  async list(search: string) {
+    const whereConditions = search
+      ? {
+          [Op.or]: [
+            Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
+              [Op.like]: `%${search.toLowerCase()}%`,
+            }),
+            Sequelize.where(
+              Sequelize.fn('lower', Sequelize.col('user.email')),
+              {
+                [Op.like]: `%${search.toLowerCase()}%`,
+              },
+            ),
+          ],
+        }
+      : {};
+
+    const professors = await this.professorRepository.findAll({
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['email'],
+        },
+      ],
+      where: whereConditions,
+    });
+
+    if (!professors) throw ApiException.notFound('Преподаватели не найдены');
+
+    const result = professors.map((professor) => {
+      return {
+        id: professor.id,
+        name: professor.fullName,
+        email: professor.user.email,
+      };
+    });
+
+    return result;
   }
 }
