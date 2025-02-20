@@ -39,7 +39,7 @@ export class Course extends Model<Course> {
 
   // new changes
 
-  @HasMany(() => CourseAssignment)
+  @HasMany(() => CourseAssignment, {as: 'course_assignment'})
   courseAssignments: CourseAssignment[];
 }
 
