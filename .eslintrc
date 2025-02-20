@@ -1,0 +1,147 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "sourceType": "module",
+    "extraFileExtensions": [".json"],
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:react-hooks/recommended"
+  ],
+  "plugins": [
+    "es",
+    "@typescript-eslint",
+    "eslint-plugin-import",
+    "eslint-plugin-node",
+    "eslint-plugin-react",
+    "eslint-plugin-react-hooks",
+    "import",
+    "eslint-plugin-stylelint"
+  ],
+  "rules": {
+    "eqeqeq": 2,
+    "curly": 2,
+    "no-mixed-operators": "off",
+    "no-useless-escape": "off",
+    "es/no-regexp-lookbehind-assertions": "error",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "args": "after-used",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "padding-line-between-statements": ["error", { "blankLine": "always", "prev": "*", "next": "export" }],
+    "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
+    "import/no-named-as-default": "off",
+    "import/no-named-as-default-member": "off",
+    "import/no-duplicates": ["error", { "prefer-inline": true }],
+    "no-trailing-spaces": "error",
+    "import/newline-after-import": 2,
+    "import/order": [
+      "error",
+      {
+        "alphabetize": {
+          "order": "asc"
+        },
+        "pathGroups": [
+          {
+            "pattern": "@shared/**",
+            "group": "external",
+            "position": "after"
+          },
+          {
+            "pattern": "@server/**",
+            "group": "external",
+            "position": "after"
+          },
+          {
+            "pattern": "~/stores",
+            "group": "external",
+            "position": "after"
+          },
+          {
+            "pattern": "~/stores/**",
+            "group": "external",
+            "position": "after"
+          },
+          {
+            "pattern": "~/models/**",
+            "group": "external",
+            "position": "after"
+          },
+          {
+            "pattern": "~/scenes/**",
+            "group": "external",
+            "position": "after"
+          },
+          {
+            "pattern": "~/components/**",
+            "group": "external",
+            "position": "after"
+          },
+          {
+            "pattern": "~/**",
+            "group": "external",
+            "position": "after"
+          },
+          {
+            "pattern": "@yonote-icons/**",
+            "group": "external",
+            "position": "after"
+          }
+        ]
+      }
+    ],
+    "no-multi-spaces": "error",
+    "react/jsx-no-leaked-render": ["error", { "validStrategies": ["ternary"] }],
+    "react/jsx-no-useless-fragment": "error",
+    "react/no-danger": "error",
+    "react/no-array-index-key": "warn",
+    "react/no-multi-comp": ["error", { "ignoreStateless": true }],
+    "react/forward-ref-uses-ref": "error",
+    "react/jsx-first-prop-new-line": ["error", "multiline-multiprop"],
+    "react/jsx-max-props-per-line": ["error", { "when": "always", "maximum": 1}],
+    "react/jsx-closing-bracket-location": ["error", "line-aligned"],
+    "no-mixed-spaces-and-tabs": "off",
+    "indent": ["error", 2],
+    "semi": ["error", "always"],
+    "no-tabs": "error",
+    "max-len": ["error", { "code": 160, "ignoreUrls": true, "ignoreStrings": false, "ignoreTemplateLiterals": true }],
+    "comma-dangle": ["error", "always-multiline"],
+    "arrow-parens": ["error", "always"],
+    "object-curly-spacing": ["error", "always"],
+    "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
+    "jsx-quotes": ["error", "prefer-double"],
+    "react/jsx-wrap-multilines": [
+      "error",
+      {
+        "declaration": "parens-new-line",
+        "assignment": "parens-new-line",
+        "return": "parens-new-line",
+        "logical": "parens-new-line",
+        "condition": "parens-new-line"
+      }
+    ]
+  },
+  "settings": {
+    "react": {
+      "createClass": "createReactClass",
+      "pragma": "React",
+      "version": "detect"
+    },
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {}
+    }
+  }
+}
