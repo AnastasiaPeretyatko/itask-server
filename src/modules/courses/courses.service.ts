@@ -6,6 +6,7 @@ import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { Professor } from 'src/models/professor.model';
 import { CourseAssignment } from 'src/models/course_assignment.model';
 import { Op } from 'sequelize';
+import { User } from 'src/models/user.model';
 
 @Injectable()
 export class CoursesService {
@@ -14,28 +15,38 @@ export class CoursesService {
     @InjectModel(Professor) private professorRepository: typeof Professor,
     @InjectModel(CourseAssignment)
     private courseAssignmentRepository: typeof CourseAssignment,
-  ) {}
+  ) { }
 
   async getOne(id: string) {
-    const course = await this.courseRepository.findByPk(id);
-
-    const assignments = await this.courseAssignmentRepository.findAll({
-      where: { course_id: id },
+    const course = await this.courseRepository.findOne({
+      where: { id },
       include: [
         {
-          model: Professor,
-          as: 'professors',
+          model: CourseAssignment,
+          as: 'course_assignment',
+          include: [
+            {
+              model: Professor,
+              as: 'professors',
+              include: [
+                {
+                  model: User,
+                  as: 'user',
+                },
+              ]
+            },
+          ],
         },
       ],
     });
 
     if (!course) throw ApiException.notFound('Курс не найден');
 
-    return { course, assignments };
+    return course;
   }
   async create(dto: CreateCourseDto) {
     const { name, description, professorIds } = dto;
-    console.log({description});
+    console.log({ description });
     // return 'keke'
     const course = await this.courseRepository.create({ name, description });
 
@@ -69,18 +80,24 @@ export class CoursesService {
   }
 
   async update(id: string, dto: CreateCourseDto) {
-    const { course } = await this.getOne(id);
+    const course = await this.getOne(id);
 
     if (!course) throw ApiException.notFound('Курс не найден');
 
     await course.update(dto);
     await course.save();
 
-    return this.getOne(id);
+    return {
+      data: await this.getOne(id),
+      message: {
+        title: 'Курс успешно обновлен',
+        description: '',
+      },
+    }
   }
 
   async delete(id: string) {
-    const { course } = await this.getOne(id);
+    const course = await this.getOne(id);
 
     if (!course) throw ApiException.notFound('Курс не найден');
 
@@ -89,19 +106,33 @@ export class CoursesService {
     });
 
     await course.destroy();
-    assignments.map(async(assignment) => await assignment.destroy());
+    assignments.map(async (assignment) => await assignment.destroy());
 
     return { message: 'Курс успешно удален' };
   }
 
   async getAll() {
-    const { count, rows: data } = await this.courseRepository.findAndCountAll();
+    const { count, rows: data } = await this.courseRepository.findAndCountAll({
+      include: [
+        {
+          model: CourseAssignment,
+          as: 'course_assignment',
+          include: [
+            {
+              model: Professor,
+              as: 'professors',
+              include: [
+                {
+                  model: User,
+                  as: 'user',
+                },
+              ]
+            },
+          ],
+        }
+      ],
+    });
 
-    if (!data || !data.length) throw ApiException.notFound('Курсы не найдены');
-
-    return {
-      data,
-      count,
-    };
+    return { data, count };
   }
 }
