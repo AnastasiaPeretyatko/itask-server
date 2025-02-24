@@ -18,7 +18,7 @@ import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 @ApiTags('Курсы')
 @Controller('courses')
 export class CoursesController {
-  constructor(private coursesService: CoursesService) {}
+  constructor(private coursesService: CoursesService) { }
 
   @Post()
   async create(
@@ -55,5 +55,17 @@ export class CoursesController {
   async getOne(@Res() res: Response, @Param('id') id: string) {
     const course = await this.coursesService.getOne(id);
     return res.status(HttpStatus.OK).send(course);
+  }
+
+  @Get('info/:id')
+  async getInfo(@Res() res: Response, @Param('id') id: string) {
+    const course = await this.coursesService.info(id);
+    return res.status(HttpStatus.OK).send(course);
+  }
+
+  @Get('list.groups/:id')
+  async getGroups(@Res() res: Response, @Param('id') id: string) {
+    const groups = await this.coursesService.getGroups(id);
+    return res.status(HttpStatus.OK).send(groups);
   }
 }
