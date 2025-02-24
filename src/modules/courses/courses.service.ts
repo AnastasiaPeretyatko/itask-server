@@ -7,6 +7,9 @@ import { Professor } from 'src/models/professor.model';
 import { CourseAssignment } from 'src/models/course_assignment.model';
 import { Op } from 'sequelize';
 import { User } from 'src/models/user.model';
+import { Group } from 'src/models/group.model';
+import { University } from 'src/models/university.model';
+import { Semester } from 'src/models/semester.model';
 
 @Injectable()
 export class CoursesService {
@@ -40,14 +43,13 @@ export class CoursesService {
       ],
     });
 
-    if (!course) throw ApiException.notFound('Курс не найден');
+    // if (!course) throw ApiException.notFound('Курс не найден');
 
-    return course;
+    return course ? course.toJSON() : null;
   }
   async create(dto: CreateCourseDto) {
     const { name, description, professorIds } = dto;
-    console.log({ description });
-    // return 'keke'
+
     const course = await this.courseRepository.create({ name, description });
 
     if (dto.professorIds) {
@@ -70,13 +72,7 @@ export class CoursesService {
 
     const data = await this.getOne(course.id);
 
-    return {
-      ...data,
-      message: {
-        title: 'Курс успешно создан',
-        description: '',
-      },
-    };
+    return { data, message: 'Курс успешно создан' };
   }
 
   async update(id: string, dto: CreateCourseDto) {
@@ -89,10 +85,7 @@ export class CoursesService {
 
     return {
       data: await this.getOne(id),
-      message: {
-        title: 'Курс успешно обновлен',
-        description: '',
-      },
+      message: 'Курс успешно обновлен',
     }
   }
 
@@ -134,5 +127,44 @@ export class CoursesService {
     });
 
     return { data, count };
+  }
+
+  async info(id: string) {
+    return await this.courseRepository.findByPk(id);
+  }
+
+  async getGroups(id: string) {
+    const groups = await this.courseAssignmentRepository.findAll({
+      where: { course_id: id },
+      attributes: ['id'],
+      include: [
+        {
+          model: Professor,
+          as: 'professors',
+          include: [
+            {
+              model: User,
+              as: 'user',
+            },
+          ]
+        },
+        {
+          model: Group,
+          as: 'groups',
+          include: [
+            {
+              model: University,
+              as: 'university'
+            }
+          ]
+        },
+        {
+          model: Semester,
+          as: 'semesters'
+        }
+      ]
+    })
+
+    return groups
   }
 }
