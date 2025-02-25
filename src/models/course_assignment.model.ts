@@ -39,28 +39,28 @@ export class CourseAssignment extends Model<CourseAssignment> {
     foreignKey: 'course_id',
     onDelete: 'CASCADE',
     as: 'courses',
-  }) 
+  })
   course: Course;
 
   @BelongsTo(() => Professor, {
     foreignKey: 'professor_id',
     onDelete: 'CASCADE',
     as: 'professors',
-  }) 
-  professor: Professor;
-  
+  })
+  professors: Professor;
+
   @BelongsTo(() => Group, {
     foreignKey: 'group_id',
     onDelete: 'CASCADE',
     as: 'groups',
   })
-  group: Group;
+  groups: Group;
 
   @BelongsTo(() => Semester, {
     foreignKey: 'semester_id',
     onDelete: 'CASCADE',
     as: 'semesters',
   })
-  semester: Semester;
+  semesters: Semester;
 }
 
