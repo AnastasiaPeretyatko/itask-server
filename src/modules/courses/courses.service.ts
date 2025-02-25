@@ -165,6 +165,51 @@ export class CoursesService {
       ]
     })
 
-    return groups
+    const groupsId = [...new Set(groups.map(g => g.groups ? g.groups.id : null)) as unknown as string[]].filter(el => el !== null)
+
+    if (!groupsId.length) return
+
+    const groupsData = groupsId.map((gId, indx) => {
+      const acc = [];
+      groups.forEach(data => {
+        const { professors, semesters, groups, id } = data;
+        console.log(professors);
+        if (data.groups && data.groups.id === gId) {
+          console.log({ gId, groups });
+
+          // Инициализация acc[indx], если он еще не существует
+          if (!acc[indx]) {
+            acc[indx] = {
+              id,
+              groups,
+              professors: [],
+              semesters: [],
+            };
+          }
+
+          // Добавление professors, если они не равны null
+          if (professors) {
+            acc[indx].professors.push(...(Array.isArray(professors) ? professors : [professors]))
+          }
+
+          // Добавление semesters, если они не равны null
+          if (semesters) {
+            acc[indx].semesters.push(...(Array.isArray(semesters) ? semesters : [semesters]))
+          }
+        }
+      });
+      return acc[indx] || { groups: null, professors: [], semesters: [] }; // Возвращаем acc[indx] или объект по умолчанию
+    });
+
+    return groupsData
+  }
+
+  async assigningGroupToCourse(group_id: string, course_id: string) {
+    const assignment = await this.courseAssignmentRepository.create({
+      group_id,
+      course_id
+    })
+
+    return assignment
   }
 }

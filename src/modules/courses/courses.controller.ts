@@ -68,4 +68,10 @@ export class CoursesController {
     const groups = await this.coursesService.getGroups(id);
     return res.status(HttpStatus.OK).send(groups);
   }
+
+  @Post('assignment')
+  async assigningGroupToCourse(@Res() res: Response, @Body() { id, courseId }: { id: string, courseId: string }) {
+    console.log(id, courseId);
+    return res.status(HttpStatus.OK).send(await this.coursesService.assigningGroupToCourse(id, courseId))
+  }
 }
