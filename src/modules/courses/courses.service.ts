@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Course } from 'src/models/courses.model';
+import { Op } from 'sequelize';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { Professor } from 'src/models/professor.model';
 import { CourseAssignment } from 'src/models/course_assignment.model';
-import { Op } from 'sequelize';
-import { User } from 'src/models/user.model';
+import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
-import { University } from 'src/models/university.model';
+import { Professor } from 'src/models/professor.model';
 import { Semester } from 'src/models/semester.model';
+import { University } from 'src/models/university.model';
+import { User } from 'src/models/user.model';
 
 @Injectable()
 export class CoursesService {
@@ -18,7 +18,7 @@ export class CoursesService {
     @InjectModel(Professor) private professorRepository: typeof Professor,
     @InjectModel(CourseAssignment)
     private courseAssignmentRepository: typeof CourseAssignment,
-  ) { }
+  ) {}
 
   async getOne(id: string) {
     const course = await this.courseRepository.findOne({
@@ -36,7 +36,7 @@ export class CoursesService {
                   model: User,
                   as: 'user',
                 },
-              ]
+              ],
             },
           ],
         },
@@ -47,6 +47,7 @@ export class CoursesService {
 
     return course ? course.toJSON() : null;
   }
+
   async create(dto: CreateCourseDto) {
     const { name, description, professorIds } = dto;
 
@@ -58,7 +59,7 @@ export class CoursesService {
       });
 
       if (!teachers || teachers.length !== professorIds.length)
-        throw ApiException.badRequest('Преподаватели не найдены');
+      {throw ApiException.badRequest('Преподаватели не найдены');}
 
       const assignments = teachers.map((teacher) => ({
         professor_id: teacher.id,
@@ -78,7 +79,7 @@ export class CoursesService {
   async update(id: string, dto: CreateCourseDto) {
     const course = await this.getOne(id);
 
-    if (!course) throw ApiException.notFound('Курс не найден');
+    if (!course) {throw ApiException.notFound('Курс не найден');}
 
     await course.update(dto);
     await course.save();
@@ -86,13 +87,13 @@ export class CoursesService {
     return {
       data: await this.getOne(id),
       message: 'Курс успешно обновлен',
-    }
+    };
   }
 
   async delete(id: string) {
     const course = await this.getOne(id);
 
-    if (!course) throw ApiException.notFound('Курс не найден');
+    if (!course) {throw ApiException.notFound('Курс не найден');}
 
     const assignments = await this.courseAssignmentRepository.findAll({
       where: { course_id: id },
@@ -119,10 +120,10 @@ export class CoursesService {
                   model: User,
                   as: 'user',
                 },
-              ]
+              ],
             },
           ],
-        }
+        },
       ],
     });
 
@@ -146,7 +147,7 @@ export class CoursesService {
               model: User,
               as: 'user',
             },
-          ]
+          ],
         },
         {
           model: Group,
@@ -154,24 +155,24 @@ export class CoursesService {
           include: [
             {
               model: University,
-              as: 'university'
-            }
-          ]
+              as: 'university',
+            },
+          ],
         },
         {
           model: Semester,
-          as: 'semesters'
-        }
-      ]
-    })
+          as: 'semesters',
+        },
+      ],
+    });
 
-    const groupsId = [...new Set(groups.map(g => g.groups ? g.groups.id : null)) as unknown as string[]].filter(el => el !== null)
+    const groupsId = [...new Set(groups.map((g) => g.groups ? g.groups.id : null)) as unknown as string[]].filter((el) => el !== null);
 
-    if (!groupsId.length) return
+    if (!groupsId.length) {return;}
 
     const groupsData = groupsId.map((gId, indx) => {
       const acc = [];
-      groups.forEach(data => {
+      groups.forEach((data) => {
         const { professors, semesters, groups, id } = data;
         console.log(professors);
         if (data.groups && data.groups.id === gId) {
@@ -189,27 +190,27 @@ export class CoursesService {
 
           // Добавление professors, если они не равны null
           if (professors) {
-            acc[indx].professors.push(...(Array.isArray(professors) ? professors : [professors]))
+            acc[indx].professors.push(...(Array.isArray(professors) ? professors : [professors]));
           }
 
           // Добавление semesters, если они не равны null
           if (semesters) {
-            acc[indx].semesters.push(...(Array.isArray(semesters) ? semesters : [semesters]))
+            acc[indx].semesters.push(...(Array.isArray(semesters) ? semesters : [semesters]));
           }
         }
       });
       return acc[indx] || { groups: null, professors: [], semesters: [] }; // Возвращаем acc[indx] или объект по умолчанию
     });
 
-    return groupsData
+    return groupsData;
   }
 
   async assigningGroupToCourse(group_id: string, course_id: string) {
     const assignment = await this.courseAssignmentRepository.create({
       group_id,
-      course_id
-    })
+      course_id,
+    });
 
-    return assignment
+    return assignment;
   }
 }

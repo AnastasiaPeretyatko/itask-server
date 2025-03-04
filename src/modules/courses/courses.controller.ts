@@ -10,10 +10,10 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
-import { Response } from 'express';
-import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+// import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 
 @ApiTags('Курсы')
 @Controller('courses')
@@ -71,7 +71,7 @@ export class CoursesController {
 
   @Post('assignment')
   async assigningGroupToCourse(@Res() res: Response, @Body() { id, courseId }: { id: string, courseId: string }) {
-    console.log(id, courseId);
-    return res.status(HttpStatus.OK).send(await this.coursesService.assigningGroupToCourse(id, courseId))
+    const data = await this.coursesService.assigningGroupToCourse(id, courseId);
+    return res.status(HttpStatus.OK).send(data);
   }
 }

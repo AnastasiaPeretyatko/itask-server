@@ -1,6 +1,6 @@
+import * as bcrypt from 'bcrypt';
 import { Column, DataType, HasOne, Model, Table } from 'sequelize-typescript';
 import { Professor } from './professor.model';
-import * as bcrypt from 'bcrypt';
 
 @Table({ tableName: 'users' })
 export class User extends Model<User> {
@@ -10,28 +10,28 @@ export class User extends Model<User> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-  id: string;
+    id: string;
 
   @Column({ type: DataType.STRING, unique: true, allowNull: false })
-  email: string;
+    email: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
-  password: string;
+    password: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
-  role: string;
+    role: string;
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
-  isActivated: boolean;
+    isActivated: boolean;
 
   @Column({ type: DataType.STRING })
-  activationLink: string;
+    activationLink: string;
 
   @HasOne(() => Professor, {
     foreignKey: 'user_id',
     as: 'professor',
   })
-  professor: Professor;
+    professor: Professor;
 
   static async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 10);

@@ -11,9 +11,9 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { TasksService } from './tasks.service';
-import { CreateTaskDto } from './dto/create-task.dto';
 import { Response } from 'express';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { TasksService } from './tasks.service';
 
 @ApiTags('Задачи')
 @Controller('tasks')
