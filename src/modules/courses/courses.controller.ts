@@ -10,17 +10,21 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
-import { Response } from 'express';
+// import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 
 @ApiTags('Курсы')
 @Controller('courses')
 export class CoursesController {
-  constructor(private coursesService: CoursesService) {}
+  constructor(private coursesService: CoursesService) { }
 
   @Post()
-  async create(@Res() res: Response, @Body() dto: CreateCourseDto) {
+  async create(
+    @Res() res: Response,
+    @Body() dto: CreateCourseDto,
+  ) {
     const course = await this.coursesService.create(dto);
     return res.status(HttpStatus.OK).send(course);
   }
@@ -51,5 +55,23 @@ export class CoursesController {
   async getOne(@Res() res: Response, @Param('id') id: string) {
     const course = await this.coursesService.getOne(id);
     return res.status(HttpStatus.OK).send(course);
+  }
+
+  @Get('info/:id')
+  async getInfo(@Res() res: Response, @Param('id') id: string) {
+    const course = await this.coursesService.info(id);
+    return res.status(HttpStatus.OK).send(course);
+  }
+
+  @Get('list.groups/:id')
+  async getGroups(@Res() res: Response, @Param('id') id: string) {
+    const groups = await this.coursesService.getGroups(id);
+    return res.status(HttpStatus.OK).send(groups);
+  }
+
+  @Post('assignment')
+  async assigningGroupToCourse(@Res() res: Response, @Body() { id, courseId }: { id: string, courseId: string }) {
+    const data = await this.coursesService.assigningGroupToCourse(id, courseId);
+    return res.status(HttpStatus.OK).send(data);
   }
 }

@@ -3,12 +3,15 @@ import { Course } from "src/models/courses.model";
 import { CoursesController } from "./courses.controller";
 import { CoursesService } from "./courses.service";
 import { SequelizeModule } from "@nestjs/sequelize";
+import { Professor } from 'src/models/professor.model';
+import { CourseAssignment } from 'src/models/course_assignment.model';
+import { User } from 'src/models/user.model';
 
 @Module({
   controllers: [CoursesController],
   providers: [CoursesService],
   imports: [
-    SequelizeModule.forFeature([Course])
+    SequelizeModule.forFeature([Course, Professor, CourseAssignment, User]),
   ]
 })
 
