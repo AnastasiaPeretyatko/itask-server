@@ -11,12 +11,12 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { ProfessorsService } from './professors.service';
-import { CreateProfessorDto } from './dto/create-professor';
-import { UsersService } from '../users/users.service';
-import { UpdateProfessorDto } from './dto/update-professor';
-import { GetProfessorsDto } from './dto/get-professor';
 import { Response } from 'express';
+import { UsersService } from '../users/users.service';
+import { CreateProfessorDto } from './dto/create-professor';
+import { GetProfessorsDto } from './dto/get-professor';
+import { UpdateProfessorDto } from './dto/update-professor';
+import { ProfessorsService } from './professors.service';
 import { ROLE } from 'src/common/enum/role';
 
 @ApiTags('Преподаватели')
@@ -31,7 +31,7 @@ export class ProfessorsController {
   async create(@Res() res: Response, @Body() dto: CreateProfessorDto) {
     const user = await this.usersService.create(dto.email, ROLE.PROFESSOR);
     const data = await this.professorsService.create(user.id, dto.fullName);
-    return res.status(HttpStatus.OK).send(data)
+    return res.status(HttpStatus.OK).send(data);
   }
 
   @Patch('/:id')
@@ -41,12 +41,18 @@ export class ProfessorsController {
     @Body() dto: UpdateProfessorDto,
   ) {
     const data = await this.professorsService.update(id, dto);
-    return res.status(HttpStatus.OK).send(data)
+    return res.status(HttpStatus.OK).send(data);
   }
 
   @Get()
   async getAll(@Res() res: Response, @Query() query: GetProfessorsDto) {
     const data = await this.professorsService.getAll(query);
+    return res.status(HttpStatus.OK).send(data);
+  }
+
+  @Get('/list')
+  async getProfessorsList(@Res() res: Response, @Query() query: {search: string}) {
+    const data = await this.professorsService.list(query.search);
     return res.status(HttpStatus.OK).send(data);
   }
 }

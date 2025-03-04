@@ -3,12 +3,14 @@ import {
   Column,
   CreatedAt,
   DataType,
+  HasMany,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { SemesterGroup } from './semester-group.model';
+import { CourseAssignment } from './course_assignment.model';
 import { SemesterGroupCourse } from './semester-group-course.model';
+import { SemesterGroup } from './semester-group.model';
 
 @Table({ tableName: 'courses' })
 export class Course extends Model<Course> {
@@ -18,21 +20,26 @@ export class Course extends Model<Course> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-  id: string;
+    id: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
-  name: string;
+    name: string;
 
-  @Column({ type: DataType.STRING, allowNull: false })
-  description: string;
+  @Column({ type: DataType.TEXT })
+    description: string | null;
 
   @CreatedAt
-  createdAt: Date;
+    createdAt: Date;
 
   @UpdatedAt
-  updatedAt: Date;
+    updatedAt: Date;
 
   @BelongsToMany(() => SemesterGroup, () => SemesterGroupCourse, 'course_id', 'semester_group_id')
-  semesterGroups: SemesterGroup[];
+    semesterGroups: SemesterGroup[];
+
+  // new changes
+
+  @HasMany(() => CourseAssignment, { as: 'course_assignment' })
+    courseAssignments: CourseAssignment[];
 }
 

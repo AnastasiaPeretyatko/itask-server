@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { Semester } from 'src/models/semester.model';
+import { Op } from 'sequelize';
 import { CreateSemestrDto } from './dto/create-semester.dto';
+import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { Group } from 'src/models/group.model';
+import { Semester } from 'src/models/semester.model';
 
 @Injectable()
 export class SemestrsService {
@@ -14,9 +15,7 @@ export class SemestrsService {
 
   async getOne(id: string) {
     const semester = await this.semestrsRepository.findByPk(id);
-
-    if (!semester) throw ApiException.notFound('Семестр не найден');
-
+    if (!semester) {throw ApiException.notFound('Семестр не найден');}
     return semester;
   }
 
@@ -31,37 +30,30 @@ export class SemestrsService {
 
     return {
       data: semester,
-      message: {
-        title: 'Семестр успешно создан',
-        description: '',
-      },
+      message: 'Семестр успешно создан',
     };
   }
 
   async update(id: string, dto: CreateSemestrDto) {
     const semester = await this.getOne(id);
 
-    if (!semester) throw ApiException.notFound('Семестр не найден');
+    if (!semester) {throw ApiException.notFound('Семестр не найден');}
 
     await semester.update(dto);
     await semester.save();
 
     return {
       data: await this.getOne(id),
-      message: {
-        title: 'Семестр успешно обновлен',
-        description: '',
-      },
+      message: 'Семестр успешно обновлен',
     };
   }
 
   async delete(id: string) {
     const semester = await this.getOne(id);
-
-    if (!semester) throw ApiException.notFound('Семестр не найден');
-
+    if (!semester) {
+      throw ApiException.notFound('Семестр не найден');
+    }
     await semester.destroy();
-
     return { message: 'Семестр успешно удален' };
   }
 
@@ -69,12 +61,19 @@ export class SemestrsService {
     const { count, rows: semesters } =
       await this.semestrsRepository.findAndCountAll();
 
-    if (!semesters || !semesters.length)
+    if (!semesters || !semesters.length) {
       throw ApiException.notFound('Семестры не найдены');
+    }
 
-    return {
-      data: semesters,
-      count,
-    };
+    return { data: semesters, count };
+  }
+
+  async list(search: string) {
+    console.log({ search });
+    const data = await this.semestrsRepository.findAll({
+      where: { name: { [Op.like]:  `%${search.toLowerCase()}%` } },
+    });
+
+    return data;
   }
 }

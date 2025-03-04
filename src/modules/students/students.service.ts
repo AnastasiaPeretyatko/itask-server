@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Group } from 'src/models/group.model';
-import { Student } from 'src/models/student.model';
-import { User } from 'src/models/user.model';
+import { Op, Sequelize } from 'sequelize';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { GetStudentsDto } from './dto/get-students.dto';
-import { Op, Sequelize } from 'sequelize';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { Group } from 'src/models/group.model';
+import { Student } from 'src/models/student.model';
 import { University } from 'src/models/university.model';
+import { User } from 'src/models/user.model';
 
 @Injectable()
 export class StudentsService {
@@ -42,7 +42,7 @@ export class StudentsService {
       ],
     });
 
-    if (!student) throw ApiException.notFound('Студент не найден');
+    if (!student) {throw ApiException.notFound('Студент не найден');}
 
     const newStudent = {
       ...student.toJSON(),
@@ -74,18 +74,18 @@ export class StudentsService {
     const { limit = 10, page = 1, search } = query;
     const whereConditions = search
       ? {
-          [Op.or]: [
-            Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
+        [Op.or]: [
+          Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
+            [Op.like]: `%${search.toLowerCase()}%`,
+          }),
+          Sequelize.where(
+            Sequelize.fn('lower', Sequelize.col('user.email')),
+            {
               [Op.like]: `%${search.toLowerCase()}%`,
-            }),
-            Sequelize.where(
-              Sequelize.fn('lower', Sequelize.col('user.email')),
-              {
-                [Op.like]: `%${search.toLowerCase()}%`,
-              },
-            ),
-          ],
-        }
+            },
+          ),
+        ],
+      }
       : {};
 
     const { rows: data, count } = await this.studentRepository.findAndCountAll({
@@ -135,7 +135,7 @@ export class StudentsService {
   async update(id: string, dto: CreateStudentDto) {
     const student = await this.studentRepository.findByPk(id);
 
-    if (!student) throw ApiException.notFound('Студент не найден');
+    if (!student) {throw ApiException.notFound('Студент не найден');}
 
     await student.update(dto);
     await student.save();
