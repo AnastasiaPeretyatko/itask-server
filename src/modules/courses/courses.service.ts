@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { CreateCourseDto } from './dto/create-course.dto';
+import { GetCoursesDto } from './dto/get-course.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { CourseAssignment } from 'src/models/course_assignment.model';
 import { Course } from 'src/models/courses.model';
@@ -105,8 +106,12 @@ export class CoursesService {
     return { message: 'Курс успешно удален' };
   }
 
-  async getAll() {
+  async getAll(query: GetCoursesDto) {
+    const { limit = 10, page = 1, search } = query;
     const { count, rows: data } = await this.courseRepository.findAndCountAll({
+      where: {
+        name: { [Op.like]: `%${search}%` },
+      },
       include: [
         {
           model: CourseAssignment,
@@ -125,6 +130,8 @@ export class CoursesService {
           ],
         },
       ],
+      limit,
+      offset: limit * (page - 1),
     });
 
     return { data, count };
