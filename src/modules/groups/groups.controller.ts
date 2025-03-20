@@ -11,10 +11,10 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { UpdateGroupDto } from './dto/update-group.dto';
-import { GetAllGroup } from './dto/get-groups.dto';
 import { Response } from 'express';
+import { CreateGroupDto } from './dto/create-group.dto';
+import { GetAllGroup } from './dto/get-groups.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupsService } from './groups.service';
 
 @ApiTags('Группы')
@@ -66,7 +66,13 @@ export class GroupsController {
 
   @Get('/:id/students')
   async getStudentsByGroup(@Res() res: Response, @Param('id') id: string) {
-    const data = await this.groupsService.getStudentsByGroup(id); 
+    const data = await this.groupsService.getStudentsByGroup(id);
+    return res.status(HttpStatus.OK).send(data);
+  }
+
+  @Get('/:id/courses')
+  async getCoursesByGroup(@Res() res: Response, @Param('id') id: string) {
+    const data = await this.groupsService.getCoursesByGroup(id);
     return res.status(HttpStatus.OK).send(data);
   }
 }

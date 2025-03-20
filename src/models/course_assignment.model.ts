@@ -40,7 +40,7 @@ export class CourseAssignment extends Model<CourseAssignment> {
     onDelete: 'CASCADE',
     as: 'courses',
   })
-    course: Course;
+    courses: Course;
 
   @BelongsTo(() => Professor, {
     foreignKey: 'professor_id',

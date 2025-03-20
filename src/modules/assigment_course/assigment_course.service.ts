@@ -4,6 +4,7 @@ import { CreateAssignmentDto } from './dto/create-assinment.dto';
 import { UpdateAssignmentDto } from './dto/update-assinment.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { CourseAssignment } from 'src/models/course_assignment.model';
+import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
 import { Professor } from 'src/models/professor.model';
 import { Semester } from 'src/models/semester.model';
@@ -146,7 +147,7 @@ export class AssigmentCourseService {
     throw ApiException.badRequest('Не было изменений');
   }
 
-  async getRecordForGroup( id: string){
+  async getRecordForGroup (id: string){
     const assignments = await this.courseAssignmentRepository.findAll({
       where: { course_id: id },
       attributes: ['id'],
@@ -214,5 +215,71 @@ export class AssigmentCourseService {
     });
 
     return groupsData;
+  }
+
+  async foundCoursesForProfessor (id: string) {
+    const assignments = await this.courseAssignmentRepository.findAll({
+      where: { professor_id: id },
+      include: [
+        {
+          model: Course,
+          as: 'courses',
+        },
+      ],
+
+    });
+
+    const exists = assignments.reduce((acc, assignment) => {
+      const { course_id } = assignment;
+      if (!acc.some((item) => item.course_id === course_id)) {
+        acc.push(assignment);
+      }
+
+      return acc;
+    }, []);
+
+    return exists.map((el) => el.courses);
+  }
+
+  async foundSemestersForCourse(course_id: string) {
+    const assignments = await this.courseAssignmentRepository.findAll({
+      attributes: ['semester_id'],
+      where: { course_id },
+      include: [
+        {
+          model: Semester,
+          as: 'semesters',
+          attributes: ['id', 'name'],
+        },
+      ],
+      group: ['CourseAssignment.semester_id', 'semesters.id', 'semesters.name'],
+    });
+
+    return assignments.map((el) => el.semesters.get({ plain: true }));
+  }
+
+  async foundGroupsForCourse(course_id: string, semester_id: string) {
+    const assignments = await this.courseAssignmentRepository.findAll({
+      attributes: ['group_id'],
+      where: { course_id, semester_id },
+      include: [
+        {
+          model: Group,
+          as: 'groups',
+          include: [
+            {
+              model: University,
+              as: 'university',
+            },
+          ],
+        },
+      ],
+      group: ['CourseAssignment.group_id', 'groups.id', 'groups.university.id' ],
+    });
+
+    return assignments.map((el) => ({
+      id: el.groups.id,
+      name: el.groups.groupCode,
+    }));
   }
 }

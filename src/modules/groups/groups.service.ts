@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { Group } from 'src/models/group.model';
 import { CreateGroupDto } from './dto/create-group.dto';
-import { Sequelize } from 'sequelize';
-import { University } from 'src/models/university.model';
-import { UpdateGroupDto } from './dto/update-group.dto';
 import { GetAllGroup } from './dto/get-groups.dto';
+import { UpdateGroupDto } from './dto/update-group.dto';
+import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { CourseAssignment } from 'src/models/course_assignment.model';
+import { Group } from 'src/models/group.model';
 import { Student } from 'src/models/student.model';
+import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
 
 @Injectable()
@@ -16,6 +16,7 @@ export class GroupsService {
     @InjectModel(Group) private groupRepository: typeof Group,
     @InjectModel(University) private universityRepository: typeof University,
     @InjectModel(Student) private studentsRepository: typeof Student,
+    @InjectModel(CourseAssignment) private assignmentRepository: typeof CourseAssignment,
   ) { }
 
   async getOne(id: string) {
@@ -42,7 +43,7 @@ export class GroupsService {
       dto.universityId,
     );
 
-    if (!university) throw ApiException.badRequest('Университет не найден');
+    if (!university) {throw ApiException.badRequest('Университет не найден');}
 
     const group = await this.groupRepository.create({
       universityId: dto.universityId,
@@ -58,13 +59,13 @@ export class GroupsService {
         title: 'Группа успешно создана',
         description: '',
       },
-    }
+    };
   }
 
   async update(id: string, dto: UpdateGroupDto) {
     const group = await this.groupRepository.findByPk(id);
 
-    if (!group) throw ApiException.badRequest('Группа не найдена');
+    if (!group) {throw ApiException.badRequest('Группа не найдена');}
 
     group.update(dto);
     group.save();
@@ -107,7 +108,7 @@ export class GroupsService {
           model: University,
           as: 'university',
         },
-      ]
+      ],
     });
 
     const filteredGroups = search
@@ -130,25 +131,54 @@ export class GroupsService {
           model: University,
           as: 'university',
         },
-      ]
+      ],
     });
-    const data = groups.map(el => ({ id: el.id }));
+    const data = groups.map((el) => ({ id: el.id }));
 
-    return data
+    return data;
   }
 
   async getStudentsByGroup(id: string) {
     const group = await this.getOne(id);
 
-    if (!group) throw ApiException.notFound('Группа не найдена');
+    if (!group) {throw ApiException.notFound('Группа не найдена');}
 
     const students = await this.studentsRepository.findAll({
       where: { group_id: id },
       include: [
         { model: Group, as: 'group', include: [{ model: University, as: 'university' }] },
         { model: User, as: 'user' },
-      ]
+      ],
     });
     return students;
+  }
+
+  async getCoursesByGroup (id: string) {
+    const groups = await this.assignmentRepository.findAll({
+      where: { course_id: id },
+      include: [
+        {
+          model: Group,
+          as: 'groups',
+          include: [
+            {
+              model: University,
+              as: 'university',
+            },
+          ],
+        },
+      ],
+    });
+
+    const exists = groups.reduce((acc, assignment) => {
+      const { group_id } = assignment;
+      if (!acc.some((item) => item.group_id === group_id)) {
+        acc.push(assignment);
+      }
+
+      return acc;
+    }, [] as CourseAssignment[]);
+
+    return exists.map((el) => ({ id: el.group_id, name: el.groups.groupCode }));
   }
 }
