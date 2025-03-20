@@ -26,4 +26,19 @@ export class AssigmentCourseController {
   async getCourseAssignment(@Param('id') id: string){
     return await this.assigmentCourseService.getRecordForGroup(id);
   }
+
+  @Get('professor/:id')
+  async foundCoursesForProfessor(@Param('id') id: string){
+    return await this.assigmentCourseService.foundCoursesForProfessor(id);
+  }
+
+  @Get('semester/:id')
+  async foundSemestersForCourse(@Param('id') id: string){
+    return await this.assigmentCourseService.foundSemestersForCourse(id);
+  }
+
+  @Get('group/:id/:semester_id')
+  async foundGroupsForCourse(@Param('id') id: string, @Param('semester_id') semester_id: string){
+    return await this.assigmentCourseService.foundGroupsForCourse(id, semester_id);
+  }
 }
