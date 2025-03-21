@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
-import { CreateStudentDto } from './dto/create-student.dto';
-import { GetStudentsDto } from './dto/get-students.dto';
+import { StudentDto } from './dto/create-student.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { PaginationDto } from 'src/common/validation/pagination';
 import { Group } from 'src/models/group.model';
 import { Student } from 'src/models/student.model';
 import { University } from 'src/models/university.model';
@@ -11,12 +11,7 @@ import { User } from 'src/models/user.model';
 
 @Injectable()
 export class StudentsService {
-  constructor(
-    @InjectModel(Student) private studentRepository: typeof Student,
-    @InjectModel(User) private userRepository: typeof User,
-    @InjectModel(Group) private groupRepository: typeof Group,
-    @InjectModel(University) private universityRepository: typeof University,
-  ) {}
+  constructor(@InjectModel(Student) private studentRepository: typeof Student) {}
 
   async getOne(id: string) {
     const student = await this.studentRepository.findByPk(id, {
@@ -52,7 +47,7 @@ export class StudentsService {
     return newStudent;
   }
 
-  async create(user_id: string, dto: CreateStudentDto) {
+  async create(user_id: string, dto: StudentDto) {
     const student = await this.studentRepository.create({
       user_id,
       group_id: dto.groupId,
@@ -60,17 +55,11 @@ export class StudentsService {
       tel: dto.tel,
     });
 
-    const studentData = await this.getOne(student.id);
-    return {
-      data: studentData,
-      message: {
-        title: 'Студент успешно создан',
-        description: '',
-      },
-    };
+    const data = await this.getOne(student.id);
+    return { data, message: 'Студент успешно создан' };
   }
 
-  async getAll(query: GetStudentsDto) {
+  async getAll(query: PaginationDto) {
     const { limit = 10, page = 1, search } = query;
     const whereConditions = search
       ? {
@@ -88,7 +77,7 @@ export class StudentsService {
       }
       : {};
 
-    const { rows: data, count } = await this.studentRepository.findAndCountAll({
+    const { rows, count } = await this.studentRepository.findAndCountAll({
       attributes: {
         exclude: ['createdAt', 'updatedAt', 'user_id', 'group_id'],
       },
@@ -114,7 +103,7 @@ export class StudentsService {
       where: whereConditions,
     });
 
-    const students = data.map((student) => {
+    const data = rows.map((student) => {
       const studentObj = student.toJSON();
 
       const group = {
@@ -126,13 +115,10 @@ export class StudentsService {
       return { ...studentObj, group };
     });
 
-    return {
-      data: students,
-      count,
-    };
+    return { data, count };
   }
 
-  async update(id: string, dto: CreateStudentDto) {
+  async update(id: string, dto: StudentDto) {
     const student = await this.studentRepository.findByPk(id);
 
     if (!student) {throw ApiException.notFound('Студент не найден');}
@@ -142,12 +128,6 @@ export class StudentsService {
 
     const data = await this.getOne(id);
 
-    return {
-      data,
-      message: {
-        title: 'Студент успешно обновлен',
-        description: '',
-      },
-    };
+    return { data, message: 'Студент успешно обновлен' };
   }
 }

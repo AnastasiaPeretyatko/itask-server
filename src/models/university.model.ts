@@ -9,11 +9,11 @@ export class University extends Model<University> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-  id: string;
+    id: string;
 
   @Column({ type: DataType.ENUM('ИКТИБ', 'ИРТСУ', 'ИНЭП', 'ИУЭС') })
-  name: string;
+    name: string;
 
   @HasMany(() => Group)
-  groups: Group[];
+    groups: Group[];
 }

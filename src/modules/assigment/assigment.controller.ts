@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Post, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AssigmentCourseService } from './assigment_course.service';
+import { AssigmentService } from './assigment.service';
 import { CreateAssignmentDto, CreateAssignmentSchema } from './dto/create-assinment.dto';
 import { UpdateAssignmentDto, UpdateAssignmentSchema } from './dto/update-assinment.dto';
 import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 
 @ApiTags('Связь с курсом')
 @Controller('assignment')
-export class AssigmentCourseController {
-  constructor(private assigmentCourseService: AssigmentCourseService) {}
+export class AssigmentController {
+  constructor(private assigmentCourseService: AssigmentService) {}
 
   @Post()
   @UsePipes(new ZodValidationPipe(CreateAssignmentSchema))
@@ -37,7 +37,7 @@ export class AssigmentCourseController {
     return await this.assigmentCourseService.foundSemestersForCourse(id);
   }
 
-  @Get('group/:id/:semester_id')
+  @Get(':id/:semester_id')
   async foundGroupsForCourse(@Param('id') id: string, @Param('semester_id') semester_id: string){
     return await this.assigmentCourseService.foundGroupsForCourse(id, semester_id);
   }
