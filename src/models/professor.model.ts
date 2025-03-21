@@ -7,9 +7,9 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
-import { User } from './user.model';
+import { Assignment } from './assignment.model';
 import { Task } from './tasks.model';
-import { CourseAssignment } from './course_assignment.model';
+import { User } from './user.model';
 
 @Table({ tableName: 'professors' })
 export class Professor extends Model<Professor> {
@@ -19,33 +19,33 @@ export class Professor extends Model<Professor> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-  id: string;
+    id: string;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID, field: 'user_id' })
-  user_id: string;
+    user_id: string;
 
   @Column({ type: DataType.STRING })
-  fullName: string;
+    fullName: string;
 
   @Column({ type: DataType.STRING })
-  tel: string;
+    tel: string;
 
   @Column({ type: DataType.STRING(256) })
-  description: string;
+    description: string;
 
   @BelongsTo(() => User, {
     foreignKey: 'user_id',
     onDelete: 'CASCADE',
     as: 'user',
   })
-  user: User;
+    user: User;
 
   @HasMany(() => Task)
-  tasks: Task[];
+    tasks: Task[];
 
   // new changes
 
-  @HasMany(() => CourseAssignment)
-  courseAssignments: CourseAssignment[];
+  @HasMany(() => Assignment)
+    assignments: Assignment[];
 }

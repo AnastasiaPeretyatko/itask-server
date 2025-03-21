@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { CourseAssignment } from 'src/models/course_assignment.model';
+import { Assignment } from 'src/models/assignment.model';
 import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
 import { Professor } from 'src/models/professor.model';
@@ -16,8 +16,8 @@ export class CoursesService {
   constructor(
     @InjectModel(Course) private courseRepository: typeof Course,
     @InjectModel(Professor) private professorRepository: typeof Professor,
-    @InjectModel(CourseAssignment)
-    private courseAssignmentRepository: typeof CourseAssignment,
+    @InjectModel(Assignment)
+    private courseAssignmentRepository: typeof Assignment,
   ) {}
 
   async getOne(id: string) {
@@ -25,12 +25,12 @@ export class CoursesService {
       where: { id },
       include: [
         {
-          model: CourseAssignment,
-          as: 'course_assignment',
+          model: Assignment,
+          as: 'assignment',
           include: [
             {
               model: Professor,
-              as: 'professors',
+              as: 'professor',
               include: [
                 {
                   model: User,
@@ -42,8 +42,6 @@ export class CoursesService {
         },
       ],
     });
-
-    // if (!course) throw ApiException.notFound('Курс не найден');
 
     return course ? course.toJSON() : null;
   }
@@ -96,7 +94,7 @@ export class CoursesService {
     if (!course) {throw ApiException.notFound('Курс не найден');}
 
     const assignments = await this.courseAssignmentRepository.findAll({
-      where: { course_id: id },
+      where: { courseId: id },
     });
 
     await course.destroy();
@@ -109,7 +107,7 @@ export class CoursesService {
     const { count, rows: data } = await this.courseRepository.findAndCountAll({
       include: [
         {
-          model: CourseAssignment,
+          model: Assignment,
           as: 'course_assignment',
           include: [
             {
@@ -136,7 +134,7 @@ export class CoursesService {
 
   async getGroups(id: string) {
     const groups = await this.courseAssignmentRepository.findAll({
-      where: { course_id: id },
+      where: { courseId: id },
       attributes: ['id'],
       include: [
         {
@@ -166,36 +164,35 @@ export class CoursesService {
       ],
     });
 
-    const groupsId = [...new Set(groups.map((g) => g.groups ? g.groups.id : null)) as unknown as string[]].filter((el) => el !== null);
+    const groupsId = [...new Set(groups.map((g) => g.group ? g.group.id : null)) as unknown as string[]].filter((el) => el !== null);
 
     if (!groupsId.length) {return;}
 
     const groupsData = groupsId.map((gId, indx) => {
       const acc = [];
       groups.forEach((data) => {
-        const { professors, semesters, groups, id } = data;
-        console.log(professors);
-        if (data.groups && data.groups.id === gId) {
+        const { professor, semester, group, id } = data;
+        if (data.group && data.group.id === gId) {
           console.log({ gId, groups });
 
           // Инициализация acc[indx], если он еще не существует
           if (!acc[indx]) {
             acc[indx] = {
               id,
-              groups,
+              group,
               professors: [],
               semesters: [],
             };
           }
 
           // Добавление professors, если они не равны null
-          if (professors) {
-            acc[indx].professors.push(...(Array.isArray(professors) ? professors : [professors]));
+          if (professor) {
+            acc[indx].professors.push(...(Array.isArray(professor) ? professor : [professor]));
           }
 
           // Добавление semesters, если они не равны null
-          if (semesters) {
-            acc[indx].semesters.push(...(Array.isArray(semesters) ? semesters : [semesters]));
+          if (semester) {
+            acc[indx].semesters.push(...(Array.isArray(semester) ? semester : [semester]));
           }
         }
       });
@@ -207,8 +204,8 @@ export class CoursesService {
 
   async assigningGroupToCourse(group_id: string, course_id: string) {
     const assignment = await this.courseAssignmentRepository.create({
-      group_id,
-      course_id,
+      groupId: group_id,
+      courseId: course_id,
     });
 
     return assignment;

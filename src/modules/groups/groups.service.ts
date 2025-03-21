@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { GetAllGroup } from './dto/get-groups.dto';
+import { GroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { CourseAssignment } from 'src/models/course_assignment.model';
+import { PaginationDto } from 'src/common/validation/pagination';
+import { Assignment } from 'src/models/assignment.model';
 import { Group } from 'src/models/group.model';
 import { Student } from 'src/models/student.model';
 import { University } from 'src/models/university.model';
@@ -16,12 +16,11 @@ export class GroupsService {
     @InjectModel(Group) private groupRepository: typeof Group,
     @InjectModel(University) private universityRepository: typeof University,
     @InjectModel(Student) private studentsRepository: typeof Student,
-    @InjectModel(CourseAssignment) private assignmentRepository: typeof CourseAssignment,
+    @InjectModel(Assignment) private assignmentRepository: typeof Assignment,
   ) { }
 
   async getOne(id: string) {
     const group = await this.groupRepository.findOne({
-      // attributes: { },
       where: { id },
       include: [
         {
@@ -31,14 +30,11 @@ export class GroupsService {
       ],
     });
 
-    // Удаляем ключ university из объекта group
     const plainGroup = group.get({ plain: true });
-    // delete plainGroup.university; // Удаляем ключ
-
     return plainGroup;
   }
 
-  async create(dto: CreateGroupDto) {
+  async create(dto: GroupDto) {
     const university = await this.universityRepository.findByPk(
       dto.universityId,
     );
@@ -55,10 +51,7 @@ export class GroupsService {
 
     return {
       data: await this.getOne(group.id),
-      message: {
-        title: 'Группа успешно создана',
-        description: '',
-      },
+      message: 'Группа успешно создана',
     };
   }
 
@@ -72,14 +65,11 @@ export class GroupsService {
 
     return {
       data: await this.getOne(id),
-      message: {
-        title: 'Группа успешно обновлена',
-        description: '',
-      },
+      message: 'Группа успешно обновлена',
     };
   }
 
-  async getAll(query: GetAllGroup) {
+  async getAll(query: PaginationDto) {
     const { search } = query;
 
     const { rows: groups, count } = await this.groupRepository.findAndCountAll({
@@ -125,7 +115,6 @@ export class GroupsService {
 
   async getAllGroupId() {
     const groups = await this.groupRepository.findAll({
-      // where: { isActive: true },
       include: [
         {
           model: University,
@@ -133,9 +122,7 @@ export class GroupsService {
         },
       ],
     });
-    const data = groups.map((el) => ({ id: el.id }));
-
-    return data;
+    return groups.map((el) => ({ id: el.id }));
   }
 
   async getStudentsByGroup(id: string) {
@@ -155,7 +142,7 @@ export class GroupsService {
 
   async getCoursesByGroup (id: string) {
     const groups = await this.assignmentRepository.findAll({
-      where: { course_id: id },
+      where: { courseId: id },
       include: [
         {
           model: Group,
@@ -171,14 +158,14 @@ export class GroupsService {
     });
 
     const exists = groups.reduce((acc, assignment) => {
-      const { group_id } = assignment;
-      if (!acc.some((item) => item.group_id === group_id)) {
+      const { groupId } = assignment;
+      if (!acc.some((item) => item.groupId === groupId)) {
         acc.push(assignment);
       }
 
       return acc;
-    }, [] as CourseAssignment[]);
+    }, [] as Assignment[]);
 
-    return exists.map((el) => ({ id: el.group_id, name: el.groups.groupCode }));
+    return exists.map((el) => ({ id: el.groupId, name: el.group.groupCode }));
   }
 }

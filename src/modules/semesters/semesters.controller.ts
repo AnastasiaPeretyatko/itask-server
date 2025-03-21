@@ -2,18 +2,16 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
-  HttpStatus,
-  Param,
+  Get, Param,
   Patch,
   Post,
   Query,
-  Res,
+  UsePipes,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
-import { CreateSemestrDto } from './dto/create-semester.dto';
+import { SemesterDto, SemesterSchema } from './dto/create-semester.dto';
 import { SemestrsService } from './semesters.service';
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 // import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 
 @ApiTags('Семестры')
@@ -22,31 +20,25 @@ export class SemestersController {
   constructor(private semestrsService: SemestrsService) {}
 
   @Post()
-  async create(@Res() res: Response, @Body() dto: CreateSemestrDto) {
-    const semester = await this.semestrsService.create(dto);
-    return res.status(HttpStatus.OK).send(semester);
+  @UsePipes(new ZodValidationPipe(SemesterSchema))
+  async create(@Body() dto: SemesterDto) {
+    return await this.semestrsService.create(dto);
   }
 
   @Patch(':id')
-  async update(
-    @Res() res: Response,
-    @Param('id') id: string,
-    @Body() dto: CreateSemestrDto,
-  ) {
-    const semester = await this.semestrsService.update(id, dto);
-    return res.status(HttpStatus.OK).send(semester);
+  @UsePipes(new ZodValidationPipe(SemesterSchema))
+  async update(@Param('id') id: string, @Body() dto: SemesterDto) {
+    return await this.semestrsService.update(id, dto);
   }
 
   @Delete(':id')
-  async delete(@Res() res: Response, @Param('id') id: string) {
-    const semester = await this.semestrsService.delete(id);
-    return res.status(HttpStatus.OK).send(semester);
+  async delete(@Param('id') id: string) {
+    return await this.semestrsService.delete(id);
   }
 
   @Get()
-  async getAll(@Res() res: Response) {
-    const semesters = await this.semestrsService.getAll();
-    return res.status(HttpStatus.OK).send(semesters);
+  async getAll() {
+    return await this.semestrsService.getAll();
   }
 
   @Get('/list')
@@ -55,9 +47,7 @@ export class SemestersController {
   }
 
   @Get(':id')
-  async getOne(@Res() res: Response, @Param('id') id: string) {
-    const semester = await this.semestrsService.getOne(id);
-    return res.status(HttpStatus.OK).send(semester);
+  async getOne(@Param('id') id: string) {
+    return await this.semestrsService.getOne(id);
   }
-
 }

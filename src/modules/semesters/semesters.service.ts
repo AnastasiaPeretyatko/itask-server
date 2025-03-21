@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { CreateSemestrDto } from './dto/create-semester.dto';
+import { SemesterDto } from './dto/create-semester.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { Group } from 'src/models/group.model';
 import { Semester } from 'src/models/semester.model';
@@ -19,7 +19,7 @@ export class SemestrsService {
     return semester;
   }
 
-  async create(dto: CreateSemestrDto) {
+  async create(dto: SemesterDto) {
     const semester = await this.semestrsRepository.create(dto);
 
     const activeGroups = await this.groupRepository.findAll({
@@ -34,7 +34,7 @@ export class SemestrsService {
     };
   }
 
-  async update(id: string, dto: CreateSemestrDto) {
+  async update(id: string, dto: SemesterDto) {
     const semester = await this.getOne(id);
 
     if (!semester) {throw ApiException.notFound('Семестр не найден');}

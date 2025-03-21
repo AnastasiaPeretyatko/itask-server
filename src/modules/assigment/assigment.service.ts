@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { CreateAssignmentDto } from './dto/create-assinment.dto';
 import { UpdateAssignmentDto } from './dto/update-assinment.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { CourseAssignment } from 'src/models/course_assignment.model';
+import { Assignment } from 'src/models/assignment.model';
 import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
 import { Professor } from 'src/models/professor.model';
@@ -12,17 +12,17 @@ import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
 
 @Injectable()
-export class AssigmentCourseService {
+export class AssigmentService {
   constructor(
-    @InjectModel(CourseAssignment) private courseAssignmentRepository: typeof CourseAssignment,
+    @InjectModel(Assignment) private assignmentRepository: typeof Assignment,
   ) {}
 
   async create(dto: CreateAssignmentDto) {
-    return await this.courseAssignmentRepository.create(dto);
+    return await this.assignmentRepository.create(dto);
   }
 
   async find(id: string) {
-    return await this.courseAssignmentRepository.findOne({
+    return await this.assignmentRepository.findOne({
       where: { id },
       include: [
         {
@@ -55,15 +55,15 @@ export class AssigmentCourseService {
 
   async addProfessor(dto: UpdateAssignmentDto){
     const { id, professor_id } = dto;
-    const assignment = await this.courseAssignmentRepository.findByPk(id);
+    const assignment = await this.assignmentRepository.findByPk(id);
 
-    if(assignment.professor_id !== professor_id && assignment.professor_id){
+    if(assignment.professorId !== professor_id && assignment.professorId){
       const newAssignment = await this.create(dto);
       return { data: newAssignment, message: 'Связь обновлена' };
     }
 
-    if(!assignment.professor_id){
-      assignment.professor_id = professor_id;
+    if(!assignment.professorId){
+      assignment.professorId = professor_id;
       assignment.save();
       return { data: assignment, message: 'Связь обновлена' };
     }
@@ -71,15 +71,15 @@ export class AssigmentCourseService {
 
   async addSemester(dto: UpdateAssignmentDto){
     const { id, semester_id } = dto;
-    const assignment = await this.courseAssignmentRepository.findByPk(id);
+    const assignment = await this.assignmentRepository.findByPk(id);
 
-    if(assignment.semester_id !== semester_id && assignment.semester_id){
+    if(assignment.semesterId !== semester_id && assignment.semesterId){
       const newAssignment = await this.create(dto);
       return { data: newAssignment, message: 'Связь обновлена' };
     }
 
-    if(!assignment.semester_id){
-      assignment.semester_id = semester_id;
+    if(!assignment.semesterId){
+      assignment.semesterId = semester_id;
       assignment.save();
       return { data: assignment, message: 'Связь обновлена' };
     }
@@ -102,37 +102,37 @@ export class AssigmentCourseService {
       return { data, message: 'Новая связь создана' };
     }
 
-    const assignment = await this.courseAssignmentRepository.findByPk(id);
+    const assignment = await this.assignmentRepository.findByPk(id);
 
     if (!assignment) {
       throw ApiException.badRequest('Запись не найдена');
     }
 
     if (professor_id !== undefined) {
-      if (assignment.professor_id !== professor_id && assignment.professor_id) {
+      if (assignment.professorId !== professor_id && assignment.professorId) {
         const { id, ...rest } = dto;
         const newAssignment = await this.create(rest);
         const data = await this.find(newAssignment.id);
         return { data, message: 'Новая связь создана' };
       }
 
-      if (assignment.professor_id === null) {
-        assignment.professor_id = professor_id;
+      if (assignment.professorId === null) {
+        assignment.professorId = professor_id;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         hasChanges = true;
       }
     }
 
     if (semester_id !== undefined) {
-      if (assignment.semester_id !== semester_id && assignment.semester_id) {
+      if (assignment.semesterId !== semester_id && assignment.semesterId) {
         const { id, ...rest } = dto;
         const newAssignment = await this.create(rest);
         const data = await this.find(newAssignment.id);
         return { data, message: 'Новая связь создана' };
       }
 
-      if (!assignment.semester_id) {
-        assignment.semester_id = semester_id;
+      if (!assignment.semesterId) {
+        assignment.semesterId = semester_id;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         hasChanges = true;
       }
@@ -148,8 +148,8 @@ export class AssigmentCourseService {
   }
 
   async getRecordForGroup (id: string){
-    const assignments = await this.courseAssignmentRepository.findAll({
-      where: { course_id: id },
+    const assignments = await this.assignmentRepository.findAll({
+      where: { courseId: id },
       attributes: ['id'],
       include: [
         {
@@ -179,7 +179,7 @@ export class AssigmentCourseService {
       ],
     });
 
-    const groupsId = [...new Set(assignments.map((g) => g.groups ? g.groups.id : null)) as unknown as string[]].filter((el) => el !== null);
+    const groupsId = [...new Set(assignments.map((g) => g.group ? g.group.id : null)) as unknown as string[]].filter((el) => el !== null);
 
     if (!groupsId.length) {
       throw ApiException.badRequest('Запись не найдена');
@@ -188,26 +188,26 @@ export class AssigmentCourseService {
     const groupsData = groupsId.map((gId, indx) => {
       const acc = [];
       assignments.forEach((data) => {
-        const { professors, semesters, groups, id } = data;
-        if (data.groups && data.groups.id === gId) {
+        const { professor, semester, group, id } = data;
+        if (data.group && data.group.id === gId) {
           // Инициализация acc[indx], если он еще не существует
           if (!acc[indx]) {
             acc[indx] = {
               id,
-              group: groups,
+              group: group,
               professors: [],
               semesters: [],
             };
           }
 
           // Добавление professors, если они не равны null
-          if (professors) {
-            acc[indx].professors.push(...(Array.isArray(professors) ? professors : [professors]));
+          if (professor) {
+            acc[indx].professors.push(...(Array.isArray(professor) ? professor : [professor]));
           }
 
           // Добавление semesters, если они не равны null
-          if (semesters) {
-            acc[indx].semesters.push(...(Array.isArray(semesters) ? semesters : [semesters]));
+          if (semester) {
+            acc[indx].semesters.push(...(Array.isArray(semester) ? semester : [semester]));
           }
         }
       });
@@ -218,54 +218,61 @@ export class AssigmentCourseService {
   }
 
   async foundCoursesForProfessor (id: string) {
-    const assignments = await this.courseAssignmentRepository.findAll({
-      where: { professor_id: id },
+    const assignments = await this.assignmentRepository.findAll({
+      where: { professorId: id },
       include: [
         {
           model: Course,
-          as: 'courses',
+          as: 'course',
         },
       ],
 
     });
 
     const exists = assignments.reduce((acc, assignment) => {
-      const { course_id } = assignment;
-      if (!acc.some((item) => item.course_id === course_id)) {
+      const { courseId } = assignment;
+      if (!acc.some((item) => item.courseId === courseId)) {
         acc.push(assignment);
       }
 
       return acc;
-    }, []);
+    }, [] as Assignment[]);
 
-    return exists.map((el) => el.courses);
+    return exists.map((el) => el.course);
   }
 
   async foundSemestersForCourse(course_id: string) {
-    const assignments = await this.courseAssignmentRepository.findAll({
-      attributes: ['semester_id'],
-      where: { course_id },
+    const assignments = await this.assignmentRepository.findAll({
+      attributes: ['semesterId'],
+      where: { courseId: course_id },
       include: [
         {
           model: Semester,
-          as: 'semesters',
+          as: 'semester',
           attributes: ['id', 'name'],
         },
       ],
-      group: ['CourseAssignment.semester_id', 'semesters.id', 'semesters.name'],
     });
 
-    return assignments.map((el) => el.semesters.get({ plain: true }));
+    const exists = assignments.reduce((acc, assignment) => {
+      const { semesterId } = assignment;
+      if (!acc.some((item) => item.semesterId === semesterId)) {
+        acc.push(assignment);
+      }
+      return acc;
+    }, []);
+
+    return exists.map((el) => el.semester.get({ plain: true }));
   }
 
-  async foundGroupsForCourse(course_id: string, semester_id: string) {
-    const assignments = await this.courseAssignmentRepository.findAll({
-      attributes: ['group_id'],
-      where: { course_id, semester_id },
+  async foundGroupsForCourse(courseId: string, semesterId: string) {
+    const assignments = await this.assignmentRepository.findAll({
+      attributes: ['groupId'],
+      where: { courseId, semesterId },
       include: [
         {
           model: Group,
-          as: 'groups',
+          as: 'group',
           include: [
             {
               model: University,
@@ -274,12 +281,19 @@ export class AssigmentCourseService {
           ],
         },
       ],
-      group: ['CourseAssignment.group_id', 'groups.id', 'groups.university.id' ],
     });
 
-    return assignments.map((el) => ({
-      id: el.groups.id,
-      name: el.groups.groupCode,
+    const exists = assignments.reduce((acc, assignment) => {
+      const { semesterId } = assignment;
+      if (!acc.some((item) => item.semesterId === semesterId)) {
+        acc.push(assignment);
+      }
+      return acc;
+    }, []);
+
+    return exists.map((el) => ({
+      id: el.group.id,
+      name: el.group.groupCode,
     }));
   }
 }

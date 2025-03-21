@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { GroupsController } from './groups.controller';
 import { GroupsService } from './groups.service';
-import { CourseAssignment } from 'src/models/course_assignment.model';
+import { Assignment } from 'src/models/assignment.model';
 import { Group } from 'src/models/group.model';
 import { Student } from 'src/models/student.model';
 import { University } from 'src/models/university.model';
@@ -12,7 +12,7 @@ import { User } from 'src/models/user.model';
   controllers: [GroupsController],
   providers: [GroupsService],
   imports:[
-    SequelizeModule.forFeature([Group, University, Student, User, CourseAssignment]),
+    SequelizeModule.forFeature([Group, University, Student, User, Assignment]),
   ],
 })
 export class GroupModule {}

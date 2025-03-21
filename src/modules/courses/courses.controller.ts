@@ -2,18 +2,14 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
-  HttpStatus,
-  Param,
+  Get, Param,
   Patch,
-  Post,
-  Res,
+  Post, UsePipes,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import { CoursesService } from './courses.service';
-import { CreateCourseDto } from './dto/create-course.dto';
-// import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+import { CreateCourseDto, CreateCourseSchema } from './dto/create-course.dto';
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 
 @ApiTags('Курсы')
 @Controller('courses')
@@ -21,57 +17,44 @@ export class CoursesController {
   constructor(private coursesService: CoursesService) { }
 
   @Post()
-  async create(
-    @Res() res: Response,
-    @Body() dto: CreateCourseDto,
-  ) {
-    const course = await this.coursesService.create(dto);
-    return res.status(HttpStatus.OK).send(course);
+  async create(@Body() dto: CreateCourseDto) {
+    return await this.coursesService.create(dto);
   }
 
   @Patch(':id')
-  async update(
-    @Res() res: Response,
-    @Param('id') id: string,
-    @Body() dto: CreateCourseDto,
-  ) {
-    const course = await this.coursesService.update(id, dto);
-    return res.status(HttpStatus.OK).send(course);
+  @UsePipes(new ZodValidationPipe(CreateCourseSchema))
+  async update(@Param('id') id: string, @Body() dto: CreateCourseDto) {
+    return await this.coursesService.update(id, dto);
   }
 
   @Delete(':id')
-  async delete(@Res() res: Response, @Param('id') id: string) {
-    const course = await this.coursesService.delete(id);
-    return res.status(HttpStatus.OK).send(course);
+  async delete(@Param('id') id: string) {
+    return await this.coursesService.delete(id);
   }
 
   @Get()
-  async getAll(@Res() res: Response) {
-    const courses = await this.coursesService.getAll();
-    return res.status(HttpStatus.OK).send(courses);
+  async getAll() {
+    return await this.coursesService.getAll();
   }
 
   @Get(':id')
-  async getOne(@Res() res: Response, @Param('id') id: string) {
-    const course = await this.coursesService.getOne(id);
-    return res.status(HttpStatus.OK).send(course);
+  async getOne(@Param('id') id: string) {
+    return await this.coursesService.getOne(id);
   }
 
   @Get('info/:id')
-  async getInfo(@Res() res: Response, @Param('id') id: string) {
-    const course = await this.coursesService.info(id);
-    return res.status(HttpStatus.OK).send(course);
+  async getInfo(@Param('id') id: string) {
+    return await this.coursesService.info(id);
   }
 
   @Get('list.groups/:id')
-  async getGroups(@Res() res: Response, @Param('id') id: string) {
-    const groups = await this.coursesService.getGroups(id);
-    return res.status(HttpStatus.OK).send(groups);
+  async getGroups(@Param('id') id: string) {
+    return await this.coursesService.getGroups(id);
   }
 
+  //TODO Выяснить нужен ли этот эндпоинт
   @Post('assignment')
-  async assigningGroupToCourse(@Res() res: Response, @Body() { id, courseId }: { id: string, courseId: string }) {
-    const data = await this.coursesService.assigningGroupToCourse(id, courseId);
-    return res.status(HttpStatus.OK).send(data);
+  async assigningGroupToCourse(@Body() { id, courseId }: { id: string, courseId: string }) {
+    return await this.coursesService.assigningGroupToCourse(id, courseId);
   }
 }

@@ -1,7 +1,7 @@
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
-import { UniversitiesService } from './universities.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { UniversitiesService } from './universities.service';
 
 @ApiTags('Университеты')
 @Controller('universities')
