@@ -17,8 +17,7 @@ export class CoursesService {
   constructor(
     @InjectModel(Course) private courseRepository: typeof Course,
     @InjectModel(Professor) private professorRepository: typeof Professor,
-    @InjectModel(Assignment)
-    private courseAssignmentRepository: typeof Assignment,
+    @InjectModel(Assignment) private assigmentRepository: typeof Assignment,
   ) {}
 
   async getOne(id: string) {
@@ -27,7 +26,7 @@ export class CoursesService {
       include: [
         {
           model: Assignment,
-          as: 'assignment',
+          as: 'assignments',
           include: [
             {
               model: Professor,
@@ -67,7 +66,7 @@ export class CoursesService {
         semester_id: null,
       }));
 
-      await this.courseAssignmentRepository.bulkCreate(assignments);
+      await this.assigmentRepository.bulkCreate(assignments);
     }
 
     const data = await this.getOne(course.id);
@@ -94,7 +93,7 @@ export class CoursesService {
 
     if (!course) {throw ApiException.notFound('Курс не найден');}
 
-    const assignments = await this.courseAssignmentRepository.findAll({
+    const assignments = await this.assigmentRepository.findAll({
       where: { courseId: id },
     });
 
@@ -140,13 +139,13 @@ export class CoursesService {
   }
 
   async getGroups(id: string) {
-    const groups = await this.courseAssignmentRepository.findAll({
+    const groups = await this.assigmentRepository.findAll({
       where: { courseId: id },
       attributes: ['id'],
       include: [
         {
           model: Professor,
-          as: 'professors',
+          as: 'professor',
           include: [
             {
               model: User,
@@ -166,7 +165,7 @@ export class CoursesService {
         },
         {
           model: Semester,
-          as: 'semesters',
+          as: 'semester',
         },
       ],
     });
@@ -210,7 +209,7 @@ export class CoursesService {
   }
 
   async assigningGroupToCourse(group_id: string, course_id: string) {
-    const assignment = await this.courseAssignmentRepository.create({
+    const assignment = await this.assigmentRepository.create({
       groupId: group_id,
       courseId: course_id,
     });

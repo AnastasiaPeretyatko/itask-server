@@ -21,6 +21,7 @@ export class CoursesController {
   constructor(private coursesService: CoursesService) { }
 
   @Post()
+  @UsePipes(new ZodValidationPipe(CreateCourseSchema))
   async create(@Body() dto: CreateCourseDto) {
     return await this.coursesService.create(dto);
   }
