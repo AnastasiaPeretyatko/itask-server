@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { PaginationDto } from 'src/common/validation/pagination';
 import { Assignment } from 'src/models/assignment.model';
 import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
@@ -103,8 +104,12 @@ export class CoursesService {
     return { message: 'Курс успешно удален' };
   }
 
-  async getAll() {
+  async getAll(query: PaginationDto) {
+    const { limit = 10, page = 1, search } = query;
     const { count, rows: data } = await this.courseRepository.findAndCountAll({
+      where: {
+        name: { [Op.like]: `%${search}%` },
+      },
       include: [
         {
           model: Assignment,
@@ -123,6 +128,8 @@ export class CoursesService {
           ],
         },
       ],
+      limit,
+      offset: limit * (page - 1),
     });
 
     return { data, count };
