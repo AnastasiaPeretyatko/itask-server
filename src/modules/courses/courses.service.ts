@@ -113,11 +113,11 @@ export class CoursesService {
       include: [
         {
           model: Assignment,
-          as: 'course_assignment',
+          as: 'assignments',
           include: [
             {
               model: Professor,
-              as: 'professors',
+              as: 'professor',
               include: [
                 {
                   model: User,

@@ -33,7 +33,7 @@ export class Course extends Model<Course> {
 
   // new changes
 
-  @HasMany(() => Assignment, { as: 'assignment' })
+  @HasMany(() => Assignment)
     assignments: Assignment[];
 }
 
