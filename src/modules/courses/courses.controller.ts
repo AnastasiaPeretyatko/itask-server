@@ -2,14 +2,18 @@ import {
   Body,
   Controller,
   Delete,
-  Get, Param,
+  Get,
+  Param,
   Patch,
-  Post, UsePipes,
+  Post,
+  UsePipes,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto, CreateCourseSchema } from './dto/create-course.dto';
 import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+import { PaginationDto, PaginationSchema } from 'src/common/validation/pagination';
 
 @ApiTags('Курсы')
 @Controller('courses')
@@ -33,8 +37,9 @@ export class CoursesController {
   }
 
   @Get()
-  async getAll() {
-    return await this.coursesService.getAll();
+  @UsePipes(new ZodValidationPipe(PaginationSchema))
+  async getAll(@Query() query: PaginationDto) {
+    return await this.coursesService.getAll(query);
   }
 
   @Get(':id')
