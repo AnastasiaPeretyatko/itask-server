@@ -1,21 +1,19 @@
 import {
   Body,
   Controller,
-  Get,
-  HttpStatus,
-  Param,
+  Get, Param,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
-  Res,
+  UsePipes,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { UpdateGroupDto } from './dto/update-group.dto';
-import { GetAllGroup } from './dto/get-groups.dto';
-import { Response } from 'express';
+import { GroupDto, GroupSchema } from './dto/create-group.dto';
+import { UpdateGroupDto, UpdateGroupSchema } from './dto/update-group.dto';
 import { GroupsService } from './groups.service';
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+import { PaginationDto, PaginationSchema } from 'src/common/validation/pagination';
 
 @ApiTags('Группы')
 @Controller('groups')
@@ -23,50 +21,46 @@ export class GroupsController {
   constructor(private groupsService: GroupsService) {}
 
   @Post()
-  async create(@Body() dto: CreateGroupDto) {
+  @UsePipes(new ZodValidationPipe(GroupSchema))
+  async create(@Body() dto: GroupDto) {
     return this.groupsService.create(dto);
   }
 
-  @Patch('/:id')
-  async updateGroup(
-    @Res() res: Response,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateGroupDto,
-  ) {
-    const data = await this.groupsService.update(id, dto);
-    return res.status(HttpStatus.OK).send(data);
+  @Patch(':id')
+  @UsePipes(new ZodValidationPipe(UpdateGroupSchema))
+  async updateGroup(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateGroupDto) {
+    return await this.groupsService.update(id, dto);
   }
 
   @Get()
-  async getAllGroups(@Res() res: Response, @Query() query: GetAllGroup) {
-    const data = await this.groupsService.getAll(query);
-    return res.status(HttpStatus.OK).send(data);
+  @UsePipes(new ZodValidationPipe(PaginationSchema))
+  async getAllGroups(@Query() query: PaginationDto) {
+    return await this.groupsService.getAll(query);
   }
 
   @Get('/groups.id')
-  async getAllGroupId(@Res() res: Response) {
-    const data = await this.groupsService.getAllGroupId();
-    return res.status(HttpStatus.OK).send(data);
+  async getAllGroupId() {
+    return await this.groupsService.getAllGroupId();
   }
 
   @Get('/groups.name')
-  async getGroupNameAndId(@Res() res: Response, @Query() query: GetAllGroup) {
-    const data = await this.groupsService.getGroupNameAndId(query.search);
-    return res.status(HttpStatus.OK).send(data);
+  @UsePipes(new ZodValidationPipe(PaginationSchema))
+  async getGroupNameAndId(@Query() query: PaginationDto) {
+    return await this.groupsService.getGroupNameAndId(query.search);
   }
 
   @Get('/:id')
-  async getOneGroup(
-    @Res() res: Response,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    const data = await this.groupsService.getOne(id);
-    return res.status(HttpStatus.OK).send(data);
+  async getOneGroup(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.groupsService.getOne(id);
   }
 
   @Get('/:id/students')
-  async getStudentsByGroup(@Res() res: Response, @Param('id') id: string) {
-    const data = await this.groupsService.getStudentsByGroup(id); 
-    return res.status(HttpStatus.OK).send(data);
+  async getStudentsByGroup(@Param('id') id: string) {
+    return await this.groupsService.getStudentsByGroup(id);
+  }
+
+  @Get('/:id/courses')
+  async getCoursesByGroup(@Param('id') id: string) {
+    return await this.groupsService.getCoursesByGroup(id);
   }
 }

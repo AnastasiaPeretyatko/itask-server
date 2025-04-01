@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { Group } from 'src/models/group.model';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { Sequelize } from 'sequelize';
-import { University } from 'src/models/university.model';
+import { GroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
-import { GetAllGroup } from './dto/get-groups.dto';
+import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { PaginationDto } from 'src/common/validation/pagination';
+import { Assignment } from 'src/models/assignment.model';
+import { Group } from 'src/models/group.model';
 import { Student } from 'src/models/student.model';
+import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
 
 @Injectable()
@@ -16,11 +16,11 @@ export class GroupsService {
     @InjectModel(Group) private groupRepository: typeof Group,
     @InjectModel(University) private universityRepository: typeof University,
     @InjectModel(Student) private studentsRepository: typeof Student,
+    @InjectModel(Assignment) private assignmentRepository: typeof Assignment,
   ) { }
 
   async getOne(id: string) {
     const group = await this.groupRepository.findOne({
-      // attributes: { },
       where: { id },
       include: [
         {
@@ -30,19 +30,16 @@ export class GroupsService {
       ],
     });
 
-    // Удаляем ключ university из объекта group
     const plainGroup = group.get({ plain: true });
-    // delete plainGroup.university; // Удаляем ключ
-
     return plainGroup;
   }
 
-  async create(dto: CreateGroupDto) {
+  async create(dto: GroupDto) {
     const university = await this.universityRepository.findByPk(
       dto.universityId,
     );
 
-    if (!university) throw ApiException.badRequest('Университет не найден');
+    if (!university) {throw ApiException.badRequest('Университет не найден');}
 
     const group = await this.groupRepository.create({
       universityId: dto.universityId,
@@ -54,31 +51,25 @@ export class GroupsService {
 
     return {
       data: await this.getOne(group.id),
-      message: {
-        title: 'Группа успешно создана',
-        description: '',
-      },
-    }
+      message: 'Группа успешно создана',
+    };
   }
 
   async update(id: string, dto: UpdateGroupDto) {
     const group = await this.groupRepository.findByPk(id);
 
-    if (!group) throw ApiException.badRequest('Группа не найдена');
+    if (!group) {throw ApiException.badRequest('Группа не найдена');}
 
     group.update(dto);
     group.save();
 
     return {
       data: await this.getOne(id),
-      message: {
-        title: 'Группа успешно обновлена',
-        description: '',
-      },
+      message: 'Группа успешно обновлена',
     };
   }
 
-  async getAll(query: GetAllGroup) {
+  async getAll(query: PaginationDto) {
     const { search } = query;
 
     const { rows: groups, count } = await this.groupRepository.findAndCountAll({
@@ -107,7 +98,7 @@ export class GroupsService {
           model: University,
           as: 'university',
         },
-      ]
+      ],
     });
 
     const filteredGroups = search
@@ -124,31 +115,57 @@ export class GroupsService {
 
   async getAllGroupId() {
     const groups = await this.groupRepository.findAll({
-      // where: { isActive: true },
       include: [
         {
           model: University,
           as: 'university',
         },
-      ]
+      ],
     });
-    const data = groups.map(el => ({ id: el.id }));
-
-    return data
+    return groups.map((el) => ({ id: el.id }));
   }
 
   async getStudentsByGroup(id: string) {
     const group = await this.getOne(id);
 
-    if (!group) throw ApiException.notFound('Группа не найдена');
+    if (!group) {throw ApiException.notFound('Группа не найдена');}
 
     const students = await this.studentsRepository.findAll({
       where: { group_id: id },
       include: [
         { model: Group, as: 'group', include: [{ model: University, as: 'university' }] },
         { model: User, as: 'user' },
-      ]
+      ],
     });
     return students;
+  }
+
+  async getCoursesByGroup (id: string) {
+    const groups = await this.assignmentRepository.findAll({
+      where: { courseId: id },
+      include: [
+        {
+          model: Group,
+          as: 'groups',
+          include: [
+            {
+              model: University,
+              as: 'university',
+            },
+          ],
+        },
+      ],
+    });
+
+    const exists = groups.reduce((acc, assignment) => {
+      const { groupId } = assignment;
+      if (!acc.some((item) => item.groupId === groupId)) {
+        acc.push(assignment);
+      }
+
+      return acc;
+    }, [] as Assignment[]);
+
+    return exists.map((el) => ({ id: el.groupId, name: el.group.groupCode }));
   }
 }

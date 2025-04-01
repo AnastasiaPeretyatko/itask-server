@@ -1,7 +1,5 @@
 import {
-  BelongsTo,
-  BelongsToMany,
-  Column,
+  BelongsTo, Column,
   CreatedAt,
   DataType,
   ForeignKey,
@@ -10,13 +8,11 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { Assignment } from './assignment.model';
+import { Student } from './student.model';
+import { University } from './university.model';
 import { Degree } from 'src/common/enum/degree';
 import { EducationMode } from 'src/common/enum/education-mode';
-import { University } from './university.model';
-import { Student } from './student.model';
-import { Semester } from './semester.model';
-import { SemesterGroup } from './semester-group.model';
-import { CourseAssignment } from './course_assignment.model';
 
 @Table({ tableName: 'groups' })
 export class Group extends Model<Group> {
@@ -26,29 +22,29 @@ export class Group extends Model<Group> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-  id: string;
+    id: string;
 
   @ForeignKey(() => University)
   @Column({ type: DataType.UUID, field: 'university_id' })
-  universityId: string;
+    universityId: string;
 
   @Column({ type: DataType.ENUM(...Object.values(Degree)) })
-  degree: string;
+    degree: string;
 
   @Column({
     type: DataType.ENUM(...Object.values(EducationMode)),
     field: 'education_mode',
   })
-  educationMode: string;
+    educationMode: string;
 
   @Column({ type: DataType.INTEGER })
-  course: number;
+    course: number;
 
   @Column({ type: DataType.INTEGER, field: 'group_number' })
-  groupNumber: number;
+    groupNumber: number;
 
-  @Column({type: DataType.BOOLEAN, field: 'is_active', defaultValue: true})
-  isActive: boolean
+  @Column({ type: DataType.BOOLEAN, field: 'is_active', defaultValue: true })
+    isActive: boolean;
 
   @Column({
     type: DataType.VIRTUAL,
@@ -79,29 +75,26 @@ export class Group extends Model<Group> {
       return `${universityCode}${degreeCode}${modeCode}${this.course}-${this.groupNumber}`;
     },
   })
-  groupCode: string;
+    groupCode: string;
 
   @CreatedAt
-  created_at: Date;
+    created_at: Date;
 
   @UpdatedAt
-  updated_at: Date;
+    updated_at: Date;
 
   @BelongsTo(() => University, {
     foreignKey: 'university_id',
     onDelete: 'CASCADE',
     as: 'university',
   })
-  university: University;
+    university: University;
 
   @HasMany(() => Student)
-  students: Student[];
-
-  @BelongsToMany(() => Semester, () => SemesterGroup)
-  semestrs: Semester[];
+    students: Student[];
 
   // new changes
 
-  @HasMany(() => CourseAssignment)
-  courseAssignments: CourseAssignment[];
+  @HasMany(() => Assignment)
+    assignments: Assignment[];
 }

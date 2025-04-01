@@ -1,4 +1,4 @@
 export enum EducationMode {
-  FULLTIME = 'full-time', 
+  FULLTIME = 'full-time',
   EXTRAMURAL = 'extramural'
 }

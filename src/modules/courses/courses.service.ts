@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { CreateCourseDto } from './dto/create-course.dto';
-import { GetCoursesDto } from './dto/get-course.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { CourseAssignment } from 'src/models/course_assignment.model';
+import { PaginationDto } from 'src/common/validation/pagination';
+import { Assignment } from 'src/models/assignment.model';
 import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
 import { Professor } from 'src/models/professor.model';
@@ -17,8 +17,7 @@ export class CoursesService {
   constructor(
     @InjectModel(Course) private courseRepository: typeof Course,
     @InjectModel(Professor) private professorRepository: typeof Professor,
-    @InjectModel(CourseAssignment)
-    private courseAssignmentRepository: typeof CourseAssignment,
+    @InjectModel(Assignment) private assigmentRepository: typeof Assignment,
   ) {}
 
   async getOne(id: string) {
@@ -26,12 +25,12 @@ export class CoursesService {
       where: { id },
       include: [
         {
-          model: CourseAssignment,
-          as: 'course_assignment',
+          model: Assignment,
+          as: 'assignments',
           include: [
             {
               model: Professor,
-              as: 'professors',
+              as: 'professor',
               include: [
                 {
                   model: User,
@@ -43,8 +42,6 @@ export class CoursesService {
         },
       ],
     });
-
-    // if (!course) throw ApiException.notFound('Курс не найден');
 
     return course ? course.toJSON() : null;
   }
@@ -69,7 +66,7 @@ export class CoursesService {
         semester_id: null,
       }));
 
-      await this.courseAssignmentRepository.bulkCreate(assignments);
+      await this.assigmentRepository.bulkCreate(assignments);
     }
 
     const data = await this.getOne(course.id);
@@ -96,8 +93,8 @@ export class CoursesService {
 
     if (!course) {throw ApiException.notFound('Курс не найден');}
 
-    const assignments = await this.courseAssignmentRepository.findAll({
-      where: { course_id: id },
+    const assignments = await this.assigmentRepository.findAll({
+      where: { courseId: id },
     });
 
     await course.destroy();
@@ -106,7 +103,7 @@ export class CoursesService {
     return { message: 'Курс успешно удален' };
   }
 
-  async getAll(query: GetCoursesDto) {
+  async getAll(query: PaginationDto) {
     const { limit = 10, page = 1, search } = query;
     const { count, rows: data } = await this.courseRepository.findAndCountAll({
       where: {
@@ -114,12 +111,12 @@ export class CoursesService {
       },
       include: [
         {
-          model: CourseAssignment,
-          as: 'course_assignment',
+          model: Assignment,
+          as: 'assignments',
           include: [
             {
               model: Professor,
-              as: 'professors',
+              as: 'professor',
               include: [
                 {
                   model: User,
@@ -142,13 +139,13 @@ export class CoursesService {
   }
 
   async getGroups(id: string) {
-    const groups = await this.courseAssignmentRepository.findAll({
-      where: { course_id: id },
+    const groups = await this.assigmentRepository.findAll({
+      where: { courseId: id },
       attributes: ['id'],
       include: [
         {
           model: Professor,
-          as: 'professors',
+          as: 'professor',
           include: [
             {
               model: User,
@@ -168,41 +165,40 @@ export class CoursesService {
         },
         {
           model: Semester,
-          as: 'semesters',
+          as: 'semester',
         },
       ],
     });
 
-    const groupsId = [...new Set(groups.map((g) => g.groups ? g.groups.id : null)) as unknown as string[]].filter((el) => el !== null);
+    const groupsId = [...new Set(groups.map((g) => g.group ? g.group.id : null)) as unknown as string[]].filter((el) => el !== null);
 
     if (!groupsId.length) {return;}
 
     const groupsData = groupsId.map((gId, indx) => {
       const acc = [];
       groups.forEach((data) => {
-        const { professors, semesters, groups, id } = data;
-        console.log(professors);
-        if (data.groups && data.groups.id === gId) {
+        const { professor, semester, group, id } = data;
+        if (data.group && data.group.id === gId) {
           console.log({ gId, groups });
 
           // Инициализация acc[indx], если он еще не существует
           if (!acc[indx]) {
             acc[indx] = {
               id,
-              groups,
+              group,
               professors: [],
               semesters: [],
             };
           }
 
           // Добавление professors, если они не равны null
-          if (professors) {
-            acc[indx].professors.push(...(Array.isArray(professors) ? professors : [professors]));
+          if (professor) {
+            acc[indx].professors.push(...(Array.isArray(professor) ? professor : [professor]));
           }
 
           // Добавление semesters, если они не равны null
-          if (semesters) {
-            acc[indx].semesters.push(...(Array.isArray(semesters) ? semesters : [semesters]));
+          if (semester) {
+            acc[indx].semesters.push(...(Array.isArray(semester) ? semester : [semester]));
           }
         }
       });
@@ -213,9 +209,9 @@ export class CoursesService {
   }
 
   async assigningGroupToCourse(group_id: string, course_id: string) {
-    const assignment = await this.courseAssignmentRepository.create({
-      group_id,
-      course_id,
+    const assignment = await this.assigmentRepository.create({
+      groupId: group_id,
+      courseId: course_id,
     });
 
     return assignment;

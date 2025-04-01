@@ -2,19 +2,18 @@ import {
   Body,
   Controller,
   Delete,
-  Get, Param,
+  Get,
+  Param,
   Patch,
   Post,
-  Query,
-  Res,
   UsePipes,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import { CoursesService } from './courses.service';
-import { CreateCourseDto } from './dto/create-course.dto';
-import { GetCoursesDto, GetCoursesSchema } from './dto/get-course.dto';
+import { CreateCourseDto, CreateCourseSchema } from './dto/create-course.dto';
 import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+import { PaginationDto, PaginationSchema } from 'src/common/validation/pagination';
 
 @ApiTags('Курсы')
 @Controller('courses')
@@ -22,11 +21,13 @@ export class CoursesController {
   constructor(private coursesService: CoursesService) { }
 
   @Post()
+  @UsePipes(new ZodValidationPipe(CreateCourseSchema))
   async create(@Body() dto: CreateCourseDto) {
     return await this.coursesService.create(dto);
   }
 
   @Patch(':id')
+  @UsePipes(new ZodValidationPipe(CreateCourseSchema))
   async update(@Param('id') id: string, @Body() dto: CreateCourseDto) {
     return await this.coursesService.update(id, dto);
   }
@@ -37,8 +38,8 @@ export class CoursesController {
   }
 
   @Get()
-  @UsePipes(new ZodValidationPipe(GetCoursesSchema))
-  async getAll(@Query() query: GetCoursesDto) {
+  @UsePipes(new ZodValidationPipe(PaginationSchema))
+  async getAll(@Query() query: PaginationDto) {
     return await this.coursesService.getAll(query);
   }
 
@@ -57,8 +58,9 @@ export class CoursesController {
     return await this.coursesService.getGroups(id);
   }
 
+  //TODO Выяснить нужен ли этот эндпоинт
   @Post('assignment')
-  async assigningGroupToCourse(@Res() res: Response, @Body() { id, courseId }: { id: string, courseId: string }) {
+  async assigningGroupToCourse(@Body() { id, courseId }: { id: string, courseId: string }) {
     return await this.coursesService.assigningGroupToCourse(id, courseId);
   }
 }

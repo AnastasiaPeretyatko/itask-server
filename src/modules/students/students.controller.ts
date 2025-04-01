@@ -1,22 +1,21 @@
 import {
   Body,
   Controller,
-  Get,
-  HttpStatus,
-  Param,
+  Get, Param,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
-  Res,
+  UsePipes,
 } from '@nestjs/common';
-import { StudentsService } from './students.service';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from '../users/users.service';
-import { CreateStudentDto } from './dto/create-student.dto';
-import { Response } from 'express';
-import { GetStudentsDto } from './dto/get-students.dto';
+import { StudentDto, StudentSchema } from './dto/create-student.dto';
+import { StudentsService } from './students.service';
 import { ROLE } from 'src/common/enum/role';
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+import { PaginationDto, PaginationSchema } from 'src/common/validation/pagination';
+
 @ApiTags('Группы')
 @Controller('students')
 export class StudentsController {
@@ -26,25 +25,21 @@ export class StudentsController {
   ) {}
 
   @Post()
-  async create(@Res() res: Response, @Body() dto: CreateStudentDto) {
+  @UsePipes(new ZodValidationPipe(StudentSchema))
+  async create(@Body() dto: StudentDto) {
     const user = await this.usersService.create(dto.email, ROLE.STUDENT);
-    const data = await this.studentService.create(user.id, dto);
-    return res.status(HttpStatus.OK).send(data);
+    return await this.studentService.create(user.id, dto);
   }
 
   @Patch(':id')
-  async update(
-    @Res() res: Response,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: CreateStudentDto,
-  ) {
-    const data = await this.studentService.update(id, dto);
-    return res.status(HttpStatus.OK).send(data);
+  @UsePipes(new ZodValidationPipe(StudentSchema))
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: StudentDto) {
+    return await this.studentService.update(id, dto);
   }
 
   @Get()
-  async getAll(@Res() res: Response, @Query() query: GetStudentsDto) {
-    const data = await this.studentService.getAll(query);
-    return res.status(HttpStatus.OK).send(data);
+  @UsePipes(new ZodValidationPipe(PaginationSchema))
+  async getAll(@Query() query: PaginationDto) {
+    return await this.studentService.getAll(query);
   }
 }
