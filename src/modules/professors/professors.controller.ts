@@ -1,23 +1,21 @@
 import {
   Body,
   Controller,
-  Get,
-  HttpStatus,
-  Param,
+  Get, Param,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
-  Res,
+  UsePipes,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import { UsersService } from '../users/users.service';
-import { CreateProfessorDto } from './dto/create-professor';
-import { GetProfessorsDto } from './dto/get-professor';
-import { UpdateProfessorDto } from './dto/update-professor';
+import { ProfessorDto, ProfessorSchema } from './dto/create-professor';
+import { UpdateProfessorDto, UpdateProfessorSchema } from './dto/update-professor';
 import { ProfessorsService } from './professors.service';
 import { ROLE } from 'src/common/enum/role';
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+import { PaginationDto, PaginationSchema } from 'src/common/validation/pagination';
 
 @ApiTags('Преподаватели')
 @Controller('professors')
@@ -28,31 +26,26 @@ export class ProfessorsController {
   ) {}
 
   @Post()
-  async create(@Res() res: Response, @Body() dto: CreateProfessorDto) {
+  @UsePipes(new ZodValidationPipe(ProfessorSchema))
+  async create(@Body() dto: ProfessorDto) {
     const user = await this.usersService.create(dto.email, ROLE.PROFESSOR);
-    const data = await this.professorsService.create(user.id, dto.fullName);
-    return res.status(HttpStatus.OK).send(data);
+    return await this.professorsService.create(user.id, dto.fullName);
   }
 
   @Patch('/:id')
-  async updateUser(
-    @Res() res: Response,
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateProfessorDto,
-  ) {
-    const data = await this.professorsService.update(id, dto);
-    return res.status(HttpStatus.OK).send(data);
+  @UsePipes(new ZodValidationPipe(UpdateProfessorSchema))
+  async updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProfessorDto) {
+    return await this.professorsService.update(id, dto);
   }
 
   @Get()
-  async getAll(@Res() res: Response, @Query() query: GetProfessorsDto) {
-    const data = await this.professorsService.getAll(query);
-    return res.status(HttpStatus.OK).send(data);
+  @UsePipes(new ZodValidationPipe(PaginationSchema))
+  async getAll(@Query() query: PaginationDto) {
+    return await this.professorsService.getAll(query);
   }
 
   @Get('/list')
-  async getProfessorsList(@Res() res: Response, @Query() query: {search: string}) {
-    const data = await this.professorsService.list(query.search);
-    return res.status(HttpStatus.OK).send(data);
+  async getProfessorsList(@Query() query: {search: string}) {
+    return await this.professorsService.list(query.search);
   }
 }

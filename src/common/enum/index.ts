@@ -1,2 +1,3 @@
 export * from './degree';
-export * from './education-mode'
+
+export * from './education-mode';

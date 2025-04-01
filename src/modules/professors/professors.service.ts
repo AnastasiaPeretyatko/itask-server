@@ -1,12 +1,11 @@
-import { Injectable, Query, Res } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { User } from 'src/models/user.model';
-import { Professor } from 'src/models/professor.model';
+import { Sequelize, Op } from 'sequelize';
 import { UpdateProfessorDto } from './dto/update-professor';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { GetProfessorsDto } from './dto/get-professor';
-import { Sequelize } from 'sequelize';
-import { Op } from 'sequelize';
+import { PaginationDto } from 'src/common/validation/pagination';
+import { Professor } from 'src/models/professor.model';
+import { User } from 'src/models/user.model';
 
 @Injectable()
 export class ProfessorsService {
@@ -43,7 +42,7 @@ export class ProfessorsService {
   async update(id: string, dto: UpdateProfessorDto) {
     const user = await this.professorRepository.findByPk(id);
 
-    if (!user) throw ApiException.notFound('Преподаватель не найден');
+    if (!user) {throw ApiException.notFound('Преподаватель не найден');}
 
     await user.update(dto);
     await user.save();
@@ -51,24 +50,24 @@ export class ProfessorsService {
     return await this.getOne(user.id);
   }
 
-  async getAll(query: GetProfessorsDto) {
+  async getAll(query: PaginationDto) {
     const { limit = 10, page = 1, search } = query;
     console.log('search', search);
 
     const whereConditions = search
       ? {
-          [Op.or]: [
-            Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
+        [Op.or]: [
+          Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
+            [Op.like]: `%${search.toLowerCase()}%`,
+          }),
+          Sequelize.where(
+            Sequelize.fn('lower', Sequelize.col('user.email')),
+            {
               [Op.like]: `%${search.toLowerCase()}%`,
-            }),
-            Sequelize.where(
-              Sequelize.fn('lower', Sequelize.col('user.email')),
-              {
-                [Op.like]: `%${search.toLowerCase()}%`,
-              },
-            ),
-          ],
-        }
+            },
+          ),
+        ],
+      }
       : {};
 
     const data = await this.professorRepository.findAndCountAll({
@@ -90,18 +89,18 @@ export class ProfessorsService {
   async list(search: string) {
     const whereConditions = search
       ? {
-          [Op.or]: [
-            Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
+        [Op.or]: [
+          Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
+            [Op.like]: `%${search.toLowerCase()}%`,
+          }),
+          Sequelize.where(
+            Sequelize.fn('lower', Sequelize.col('user.email')),
+            {
               [Op.like]: `%${search.toLowerCase()}%`,
-            }),
-            Sequelize.where(
-              Sequelize.fn('lower', Sequelize.col('user.email')),
-              {
-                [Op.like]: `%${search.toLowerCase()}%`,
-              },
-            ),
-          ],
-        }
+            },
+          ),
+        ],
+      }
       : {};
 
     const professors = await this.professorRepository.findAll({
@@ -115,7 +114,7 @@ export class ProfessorsService {
       where: whereConditions,
     });
 
-    if (!professors) throw ApiException.notFound('Преподаватели не найдены');
+    if (!professors) {throw ApiException.notFound('Преподаватели не найдены');}
 
     const result = professors.map((professor) => {
       return {

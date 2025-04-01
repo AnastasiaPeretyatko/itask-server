@@ -1,7 +1,8 @@
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { Body, Controller, Post, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
+import { AuthService } from './auth.service';
+import { LoginDto, LoginSchema } from './dto/login.dto';
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 
 @ApiTags('Авторизация')
 @Controller('auth')
@@ -9,8 +10,8 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post()
-  async login(@Res() res: Response, @Body() dto: { email: string; password: string }) {
-    const user = await this.authService.login(dto.email, dto.password);
-    return res.status(HttpStatus.OK).send(user);
+  @UsePipes(new ZodValidationPipe(LoginSchema))
+  async login(@Body() dto: LoginDto) {
+    return await this.authService.login(dto);
   }
 }

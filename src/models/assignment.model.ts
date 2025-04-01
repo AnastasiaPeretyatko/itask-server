@@ -9,8 +9,8 @@ import { Group } from './group.model';
 import { Professor } from './professor.model';
 import { Semester } from './semester.model';
 
-@Table({ tableName: 'course_assignment' })
-export class CourseAssignment extends Model<CourseAssignment> {
+@Table({ tableName: 'assignment' })
+export class Assignment extends Model<Assignment> {
   @Column({
     type: DataType.UUID,
     unique: true,
@@ -20,47 +20,47 @@ export class CourseAssignment extends Model<CourseAssignment> {
     id: string;
 
   @ForeignKey(() => Course)
-  @Column({ type: DataType.UUID, field: 'course_id' })
-    course_id: string;
+  @Column({ type: DataType.UUID })
+    courseId: string;
 
   @ForeignKey(() => Professor)
-  @Column({ type: DataType.UUID, field: 'professor_id', allowNull: true })
-    professor_id: string | null;
+  @Column({ type: DataType.UUID, allowNull: true })
+    professorId: string | null;
 
   @ForeignKey(() => Group)
-  @Column({ type: DataType.UUID, field: 'group_id', allowNull: true })
-    group_id: string | null;
+  @Column({ type: DataType.UUID, allowNull: true })
+    groupId: string | null;
 
   @ForeignKey(() => Semester)
-  @Column({ type: DataType.UUID, field: 'semester_id', allowNull: true })
-    semester_id: string | null;
+  @Column({ type: DataType.UUID, allowNull: true })
+    semesterId: string | null;
 
   @BelongsTo(() => Course, {
-    foreignKey: 'course_id',
+    foreignKey: 'courseId',
     onDelete: 'CASCADE',
-    as: 'courses',
+    as: 'course',
   })
     course: Course;
 
   @BelongsTo(() => Professor, {
-    foreignKey: 'professor_id',
+    foreignKey: 'professorId',
     onDelete: 'CASCADE',
-    as: 'professors',
+    as: 'professor',
   })
-    professors: Professor;
+    professor: Professor;
 
   @BelongsTo(() => Group, {
-    foreignKey: 'group_id',
+    foreignKey: 'groupId',
     onDelete: 'CASCADE',
-    as: 'groups',
+    as: 'group',
   })
-    groups: Group;
+    group: Group;
 
   @BelongsTo(() => Semester, {
-    foreignKey: 'semester_id',
+    foreignKey: 'semesterId',
     onDelete: 'CASCADE',
-    as: 'semesters',
+    as: 'semester',
   })
-    semesters: Semester;
+    semester: Semester;
 }
 

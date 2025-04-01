@@ -7,7 +7,6 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Professor } from './professor.model';
-import { SemesterGroupCourse } from './semester-group-course.model';
 import { Student } from './student.model';
 
 @Table({ tableName: 'tasks' })
@@ -18,90 +17,57 @@ export class Task extends Model<Task> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-  id: string;
+    id: string;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+    title: string;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+    description: string;
 
   @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  title: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  description: string;
-
-  @Column({
-    field: 'start_date',
+    field: 'startDate',
     type: DataType.DATE,
   })
-  startDate: Date;
+    startDate: Date;
 
   @Column({
-    field: 'end_date',
+    field: 'endDate',
     type: DataType.DATE,
   })
-  endDate: Date;
+    endDate: Date;
 
   @ForeignKey(() => Professor)
   @Column({
     type: DataType.UUID,
-    field: 'creator_id',
+    field: 'creatorId',
   })
-  creatorId: string;
-
-  @ForeignKey(() => SemesterGroupCourse)
-  @Column({
-    type: DataType.UUID,
-    field: 'semester_group_course_id',
-  })
-  semesterGroupCourseId: string;
+    creatorId: string;
 
   @ForeignKey(() => Student)
   @Column({
     type: DataType.UUID,
-    field: 'from_student_id',
+    field: 'fromStudentId',
   })
-  fromStudentId: string;
+    fromStudentId: string;
 
   @Column({ type: DataType.DATE })
-  createdAt: Date;
+    createdAt: Date;
 
   @Column({ type: DataType.DATE })
-  updatedAt: Date;
+    updatedAt: Date;
 
   @BelongsTo(() => Professor, {
-    foreignKey: 'creator_id',
+    foreignKey: 'creatorId',
     onDelete: 'CASCADE',
     as: 'creator',
   })
-  creator: Professor;
-
-  @BelongsTo(() => SemesterGroupCourse, {
-    foreignKey: 'semester_group_course_id',
-    onDelete: 'CASCADE',
-    as: 'semesterGroupCourse',
-  })
-  semesterGroupCourse: SemesterGroupCourse;
+    creator: Professor;
 
   @BelongsTo(() => Student, {
-    foreignKey: 'from_student_id',
+    foreignKey: 'fromStudentId',
     onDelete: 'CASCADE',
     as: 'fromStudent',
   })
-  fromStudent: Student;
-
-  creator_id?: string;
-  semester_group_course_id?: string;
-  from_student_id?: string;
-
-  toJSON() {
-    const attributes = { ...this.get() }; // Получаем все данные модели
-    // Удаляем дублирующие поля
-    delete attributes.creator_id;
-    delete attributes.semester_group_course_id;
-    delete attributes.from_student_id;
-    return attributes;
-  }
+    fromStudent: Student;
 }
