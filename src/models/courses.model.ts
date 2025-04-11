@@ -25,6 +25,18 @@ export class Course extends Model<Course> {
   @Column({ type: DataType.TEXT })
     description: string | null;
 
+  @Column({ type: DataType.STRING, allowNull: true })
+    learning_form: string | null;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+    language: string | null;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+    assessment_system: string | null;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+    access: string | null;
+
   @CreatedAt
     createdAt: Date;
 

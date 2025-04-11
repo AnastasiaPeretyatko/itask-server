@@ -1,36 +1,24 @@
-import {
-  Controller,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { CreateTaskDto, CreateTaskSchema } from './dto/create-task.dto';
+import { GetAllTaskDto, GetAllTaskSchema } from './dto/getAll.dto';
 import { TasksService } from './tasks.service';
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 
 @ApiTags('Задачи')
 @Controller('tasks')
 export class TasksController {
   constructor(private taskService: TasksService) {}
 
-  // @Post()
-  // async createTask(@Body() dto: CreateTaskDto) {
-  //   return await this.taskService.createTask(dto);
-  // }
+  @Post()
+  @UsePipes(new ZodValidationPipe(CreateTaskSchema))
+  async create(@Body() dto: CreateTaskDto) {
+    return await this.taskService.create(dto);
+  }
 
-  // @Patch(':id')
-  // async updateTask(@Body() dto: CreateTaskDto, @Param('id') id: string) {
-  //   return await this.taskService.update(id, dto);
-  // }
-
-  // @Get(':id')
-  // async getOneTask(@Body() id: string) {
-  //   return await this.taskService.getOne(id);
-  // }
-
-  // @Get()
-  // async getTasks(@Query() query: { groupId: string }) {
-  //   return await this.taskService.getAll(query.groupId);
-  // }
-
-  // @Delete(':id')
-  // async deleteTask(@Param('id') id: string) {
-  //   return await this.taskService.delete(id);
-  // }
+  @Get()
+  @UsePipes(new ZodValidationPipe(GetAllTaskSchema))
+  async getAll(@Query() query: GetAllTaskDto) {
+    return await this.taskService.all(query);
+  }
 }

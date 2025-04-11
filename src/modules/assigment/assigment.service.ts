@@ -54,32 +54,32 @@ export class AssigmentService {
   }
 
   async addProfessor(dto: UpdateAssignmentDto){
-    const { id, professor_id } = dto;
+    const { id, professorId } = dto;
     const assignment = await this.assignmentRepository.findByPk(id);
 
-    if(assignment.professorId !== professor_id && assignment.professorId){
+    if(assignment.professorId !== professorId && assignment.professorId){
       const newAssignment = await this.create(dto);
       return { data: newAssignment, message: 'Связь обновлена' };
     }
 
     if(!assignment.professorId){
-      assignment.professorId = professor_id;
+      assignment.professorId = professorId;
       assignment.save();
       return { data: assignment, message: 'Связь обновлена' };
     }
   }
 
   async addSemester(dto: UpdateAssignmentDto){
-    const { id, semester_id } = dto;
+    const { id, semesterId } = dto;
     const assignment = await this.assignmentRepository.findByPk(id);
 
-    if(assignment.semesterId !== semester_id && assignment.semesterId){
+    if(assignment.semesterId !== semesterId && assignment.semesterId){
       const newAssignment = await this.create(dto);
       return { data: newAssignment, message: 'Связь обновлена' };
     }
 
     if(!assignment.semesterId){
-      assignment.semesterId = semester_id;
+      assignment.semesterId = semesterId;
       assignment.save();
       return { data: assignment, message: 'Связь обновлена' };
     }
@@ -91,7 +91,7 @@ export class AssigmentService {
   }
 
   async update(dto: UpdateAssignmentDto) {
-    const { id, semester_id, professor_id } = dto;
+    const { id, semesterId, professorId } = dto;
 
     // Флаг для отслеживания изменений
     let hasChanges = false;
@@ -108,8 +108,8 @@ export class AssigmentService {
       throw ApiException.badRequest('Запись не найдена');
     }
 
-    if (professor_id !== undefined) {
-      if (assignment.professorId !== professor_id && assignment.professorId) {
+    if (professorId !== undefined) {
+      if (assignment.professorId !== professorId && assignment.professorId) {
         const { id, ...rest } = dto;
         const newAssignment = await this.create(rest);
         const data = await this.find(newAssignment.id);
@@ -117,14 +117,14 @@ export class AssigmentService {
       }
 
       if (assignment.professorId === null) {
-        assignment.professorId = professor_id;
+        assignment.professorId = professorId;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         hasChanges = true;
       }
     }
 
-    if (semester_id !== undefined) {
-      if (assignment.semesterId !== semester_id && assignment.semesterId) {
+    if (semesterId !== undefined) {
+      if (assignment.semesterId !== semesterId && assignment.semesterId) {
         const { id, ...rest } = dto;
         const newAssignment = await this.create(rest);
         const data = await this.find(newAssignment.id);
@@ -132,7 +132,7 @@ export class AssigmentService {
       }
 
       if (!assignment.semesterId) {
-        assignment.semesterId = semester_id;
+        assignment.semesterId = semesterId;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         hasChanges = true;
       }
@@ -154,7 +154,7 @@ export class AssigmentService {
       include: [
         {
           model: Professor,
-          as: 'professors',
+          as: 'professor',
           include: [
             {
               model: User,
@@ -164,7 +164,7 @@ export class AssigmentService {
         },
         {
           model: Group,
-          as: 'groups',
+          as: 'group',
           include: [
             {
               model: University,
@@ -174,7 +174,7 @@ export class AssigmentService {
         },
         {
           model: Semester,
-          as: 'semesters',
+          as: 'semester',
         },
       ],
     });
@@ -262,7 +262,9 @@ export class AssigmentService {
       return acc;
     }, []);
 
-    return exists.map((el) => el.semester.get({ plain: true }));
+    return exists
+      .filter((el) => el.semester)
+      .map((el) => el.semester);
   }
 
   async foundGroupsForCourse(courseId: string, semesterId: string) {
@@ -295,5 +297,53 @@ export class AssigmentService {
       id: el.group.id,
       name: el.group.groupCode,
     }));
+  }
+
+  async getGroupsWithSemesters(courseId: string) {
+    const assignments = await Assignment.findAll({
+      where: {
+        courseId,
+        // semesterId: { [Op.not]: null },
+      },
+      include: [
+        {
+          model: Group,
+          as: 'group',
+          include: [{ model: University, as: 'university', attributes: ['name'] }],
+        },
+        {
+          model: Semester,
+          as: 'semester',
+          attributes: ['id', 'name', 'startDate', 'endDate', 'createdAt', 'updatedAt'],
+        },
+      ],
+    });
+
+    // Группируем по groupId и убираем дубликаты семестров
+    const groupsMap = new Map<string, { group: Group; semesters: Semester[] }>();
+
+    assignments.forEach((assignment) => {
+      const groupId = assignment.groupId;
+      const semester = assignment.semester;
+
+      if (!groupId) {return;} // Пропускаем записи без группы или семестра
+
+      if (!groupsMap.has(groupId)) {
+        groupsMap.set(groupId, {
+          group: assignment.group,
+          semesters: [],
+        });
+      }
+
+      // Проверяем, есть ли уже такой семестр в массиве
+      const existingSemesters = groupsMap.get(groupId)!.semesters;
+      const isDuplicate = existingSemesters.some((s) => s.id === semester.id);
+
+      if (!isDuplicate) {
+        existingSemesters.push(semester);
+      }
+    });
+
+    return Array.from(groupsMap.values());
   }
 }

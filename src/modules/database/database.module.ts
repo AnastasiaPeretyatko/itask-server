@@ -10,6 +10,7 @@ import { Student } from 'src/models/student.model';
 import { Task } from 'src/models/tasks.model';
 import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
+import { UserTask } from 'src/models/user_task.model';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { User } from 'src/models/user.model';
           Semester,
           Task,
           Assignment,
+          UserTask,
         ],
         autoLoadModels: true,
         synchronize: false,

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { PaginationDto } from 'src/common/validation/pagination';
@@ -20,8 +20,8 @@ export class CoursesService {
     @InjectModel(Assignment) private assigmentRepository: typeof Assignment,
   ) {}
 
-  async getOne(id: string) {
-    const course = await this.courseRepository.findOne({
+  async find(id: string) {
+    return await this.courseRepository.findOne({
       where: { id },
       include: [
         {
@@ -42,8 +42,10 @@ export class CoursesService {
         },
       ],
     });
+  }
 
-    return course ? course.toJSON() : null;
+  async getOne(id: string) {
+    return await this.find(id);
   }
 
   async create(dto: CreateCourseDto) {
@@ -69,13 +71,14 @@ export class CoursesService {
       await this.assigmentRepository.bulkCreate(assignments);
     }
 
-    const data = await this.getOne(course.id);
-
-    return { data, message: 'Курс успешно создан' };
+    return {
+      data: await this.find(course.id),
+      message: 'Курс успешно создан',
+    };
   }
 
   async update(id: string, dto: CreateCourseDto) {
-    const course = await this.getOne(id);
+    const course = await this.find(id);
 
     if (!course) {throw ApiException.notFound('Курс не найден');}
 
@@ -83,13 +86,13 @@ export class CoursesService {
     await course.save();
 
     return {
-      data: await this.getOne(id),
+      data: await this.find(id),
       message: 'Курс успешно обновлен',
     };
   }
 
   async delete(id: string) {
-    const course = await this.getOne(id);
+    const course = await this.find(id);
 
     if (!course) {throw ApiException.notFound('Курс не найден');}
 
@@ -179,7 +182,6 @@ export class CoursesService {
       groups.forEach((data) => {
         const { professor, semester, group, id } = data;
         if (data.group && data.group.id === gId) {
-          console.log({ gId, groups });
 
           // Инициализация acc[indx], если он еще не существует
           if (!acc[indx]) {
@@ -215,5 +217,47 @@ export class CoursesService {
     });
 
     return assignment;
+  }
+
+  async getStudentsAndTask(id: string, semesterId: string, groupId: string, professorId: string) {
+    const query = `
+      SELECT 
+        s.*,
+        (
+          SELECT json_agg(
+            json_build_object(
+              'task', to_jsonb(t.*),
+              'user_task', to_jsonb(ut.*)
+            )
+          )
+          FROM user_task ut
+          JOIN task t ON ut.task_id = t.id
+          WHERE ut.student_id = s.id
+        ) AS task,
+        (
+          SELECT COALESCE(SUM(grade), 0)
+          FROM user_task
+          WHERE student_id = s.id
+        ) AS "totalGrade"
+      FROM "assignment" a
+      JOIN students s ON a."groupId" = s.group_id
+      WHERE a."groupId" = :groupId
+        AND a."courseId" = :courseId
+        AND a."professorId" = :professorId
+        AND a."semesterId" = :semesterId
+      GROUP BY s.id
+    `;
+
+    const result = await this.assigmentRepository.sequelize.query(query, {
+      type: QueryTypes.SELECT,
+      replacements: {
+        courseId: id,
+        semesterId,
+        groupId,
+        professorId,
+      },
+    });
+
+    return result;
   }
 }
