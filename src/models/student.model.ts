@@ -1,15 +1,15 @@
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
   DataType,
-  ForeignKey,
-  HasMany,
-  Model,
+  ForeignKey, Model,
   Table,
 } from 'sequelize-typescript';
 import { Group } from './group.model';
 import { Task } from './tasks.model';
 import { User } from './user.model';
+import { UserTask } from './user_task.model';
 
 @Table({ tableName: 'students' })
 export class Student extends Model<Student> {
@@ -49,6 +49,9 @@ export class Student extends Model<Student> {
   })
     user: User;
 
-  @HasMany(() => Task)
+  // @HasMany(() => Task)
+  //   tasks: Task[];
+
+  @BelongsToMany(() => Task, () => UserTask)
     tasks: Task[];
 }

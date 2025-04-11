@@ -52,7 +52,6 @@ export class ProfessorsService {
 
   async getAll(query: PaginationDto) {
     const { limit = 10, page = 1, search } = query;
-    console.log('search', search);
 
     const whereConditions = search
       ? {

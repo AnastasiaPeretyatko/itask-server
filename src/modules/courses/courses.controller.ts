@@ -63,4 +63,13 @@ export class CoursesController {
   async assigningGroupToCourse(@Body() { id, courseId }: { id: string, courseId: string }) {
     return await this.coursesService.assigningGroupToCourse(id, courseId);
   }
+
+  @Get(':id/students')
+  async getStudentsAndTask(@Param('id') id: string, @Query() query: {
+    semesterId: string,
+    groupId: string
+    professorId: string
+  }) {
+    return await this.coursesService.getStudentsAndTask(id, query.semesterId, query.groupId, query.professorId);
+  }
 }

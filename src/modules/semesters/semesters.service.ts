@@ -69,7 +69,6 @@ export class SemestrsService {
   }
 
   async list(search: string) {
-    console.log({ search });
     const data = await this.semestrsRepository.findAll({
       where: { name: { [Op.like]:  `%${search.toLowerCase()}%` } },
     });

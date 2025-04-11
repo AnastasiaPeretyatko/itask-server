@@ -37,8 +37,14 @@ export class AssigmentController {
     return await this.assigmentCourseService.foundSemestersForCourse(id);
   }
 
+  @Get('forcourse/:id')
+  async getGroupAndSemester(@Param('id') id: string){
+    return await this.assigmentCourseService.getGroupsWithSemesters(id);
+  }
+
   @Get(':id/:semester_id')
   async foundGroupsForCourse(@Param('id') id: string, @Param('semester_id') semester_id: string){
     return await this.assigmentCourseService.foundGroupsForCourse(id, semester_id);
   }
+
 }
