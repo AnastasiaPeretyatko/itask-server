@@ -3,6 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface) {
+    await queryInterface.dropTable('professor_course');
     await queryInterface.dropTable('semester_group_course');
   },
 
