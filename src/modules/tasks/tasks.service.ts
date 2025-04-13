@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetAllTaskDto } from './dto/getAll.dto';
 import { TaskStatus } from 'src/common/enum/task';
@@ -93,18 +94,36 @@ export class TasksService {
     return tasks;
   }
 
-  async getTasksForStudent(id: string) {
-    const { tasks } = await this.studentRepository.findOne({
+  async getTasksForStudent(id: string, month?: string) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const taskWhere: any = {};
+
+    if (month) {
+      const startOfMonth = new Date(`${month}-01T00:00:00`);
+      const endOfMonth = new Date(startOfMonth);
+      endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+      endOfMonth.setDate(0); // Последний день месяца (28-31)
+
+      // Только задачи, у которых endDate попадает в этот месяц
+      taskWhere.endDate = {
+        [Op.between]: [startOfMonth, endOfMonth], // BETWEEN начало_месяца AND конец_месяца
+      };
+    }
+
+    const student = await this.studentRepository.findOne({
       where: { id },
       include: [
         {
           model: Task,
           as: 'tasks',
           through: { as: 'user_task' },
+          ...(month && { where: taskWhere }),
+          order: [['endDate', 'ASC']], // Сортировка по возрастанию endDate
         },
       ],
     });
-    return tasks;
+
+    return student?.tasks || [];
   }
 
   async updateStatusTask(id: string, status: TaskStatus) {
