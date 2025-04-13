@@ -130,4 +130,9 @@ export class StudentsService {
 
     return { data, message: 'Студент успешно обновлен' };
   }
+
+  async getId(userId: string) {
+    const student = await this.studentRepository.findOne({ where: { user_id: userId } });
+    return { studentId: student?.id || null };
+  }
 }
