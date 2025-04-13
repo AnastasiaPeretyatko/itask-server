@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AssigmentService } from './assigment.service';
 import { CreateAssignmentDto, CreateAssignmentSchema } from './dto/create-assinment.dto';
@@ -32,16 +32,22 @@ export class AssigmentController {
     return await this.assigmentCourseService.foundCoursesForProfessor(id);
   }
 
+  // @Get('semester/:id')
+  // async foundSemestersForCourse(@Param('id') id: string){
+  //   return await this.assigmentCourseService.foundSemestersForCourse(id);
+  // }
+
+  @Get('group/:id')
+  async getGroupByCourse(@Param('id') id: string, @Query() params: {semesterId: string} ){
+    return await this.assigmentCourseService.getGroupByCourse(id, params);
+  }
+
   @Get('semester/:id')
-  async foundSemestersForCourse(@Param('id') id: string){
-    return await this.assigmentCourseService.foundSemestersForCourse(id);
+  async getSemesterByCourse(@Param('id') id: string, @Query() params: {groupId: string}){
+    return await this.assigmentCourseService.getSemesterByCourse(id, params);
   }
 
-  @Get('forcourse/:id')
-  async getGroupAndSemester(@Param('id') id: string){
-    return await this.assigmentCourseService.getGroupsWithSemesters(id);
-  }
-
+  // TODO delete
   @Get(':id/:semester_id')
   async foundGroupsForCourse(@Param('id') id: string, @Param('semester_id') semester_id: string){
     return await this.assigmentCourseService.foundGroupsForCourse(id, semester_id);

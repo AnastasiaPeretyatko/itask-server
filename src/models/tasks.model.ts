@@ -25,7 +25,7 @@ export class Task extends Model<Task> {
     title: string;
 
   @Column({ type: DataType.JSONB, allowNull: true, defaultValue: null })
-    text: string;
+    text: string | null;
 
   @ForeignKey(() => Professor)
   @Column({ type: DataType.UUID, field: 'creatorId' })
@@ -36,19 +36,19 @@ export class Task extends Model<Task> {
     assignmentId: string;
 
   @Column({ type: DataType.INTEGER, defaultValue: null })
-    score: number;
+    score: number | null;
 
   @Column({ type: DataType.STRING, defaultValue: null })
-    priority: string;
+    priority: string | null;
 
   @Column({ type: DataType.DATE, defaultValue: null })
-    startDate: Date | string;
+    startDate: Date | string | null;
 
   @Column({ type: DataType.DATE, defaultValue: null })
-    endDate: Date | string;
+    endDate: Date | string | null;
 
   @Column({ type: DataType.JSONB, defaultValue: null })
-    tags: string;
+    tags: string | null;
 
   @Column({ type: DataType.DATE })
     createdAt: Date;
@@ -64,6 +64,4 @@ export class Task extends Model<Task> {
 
   @BelongsToMany(() => Student, () => UserTask)
     students: Student[];
-
-  // public setUser_students!: (students: Student[] | string[], options?: any) => Promise<void>;
 }
