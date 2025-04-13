@@ -5,7 +5,9 @@ import { User } from 'src/models/user.model';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User) private userRepository: typeof User) {}
+  constructor(
+    @InjectModel(User) private userRepository: typeof User,
+  ) {}
 
   async create(email: string, role: string) {
     const candidate = await this.userRepository.findOne({

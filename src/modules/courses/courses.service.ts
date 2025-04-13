@@ -243,7 +243,6 @@ export class CoursesService {
       JOIN students s ON a."groupId" = s.group_id
       WHERE a."groupId" = :groupId
         AND a."courseId" = :courseId
-        AND a."professorId" = :professorId
         AND a."semesterId" = :semesterId
       GROUP BY s.id
     `;
@@ -254,7 +253,7 @@ export class CoursesService {
         courseId: id,
         semesterId,
         groupId,
-        professorId,
+        // professorId,
       },
     });
 

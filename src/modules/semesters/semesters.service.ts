@@ -22,12 +22,6 @@ export class SemestrsService {
   async create(dto: SemesterDto) {
     const semester = await this.semestrsRepository.create(dto);
 
-    const activeGroups = await this.groupRepository.findAll({
-      where: { isActive: true },
-    });
-
-    await semester.$add('groups', activeGroups);
-
     return {
       data: semester,
       message: 'Семестр успешно создан',

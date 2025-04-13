@@ -27,7 +27,7 @@ export class AssigmentService {
       include: [
         {
           model: Professor,
-          as: 'professors',
+          as: 'professor',
           include: [
             {
               model: User,
@@ -37,7 +37,7 @@ export class AssigmentService {
         },
         {
           model: Group,
-          as: 'groups',
+          as: 'group',
           include: [
             {
               model: University,
@@ -47,7 +47,7 @@ export class AssigmentService {
         },
         {
           model: Semester,
-          as: 'semesters',
+          as: 'semester',
         },
       ],
     });
@@ -299,6 +299,7 @@ export class AssigmentService {
     }));
   }
 
+  //TODO delete
   async getGroupsWithSemesters(courseId: string) {
     const assignments = await Assignment.findAll({
       where: {
@@ -322,11 +323,20 @@ export class AssigmentService {
     // Группируем по groupId и убираем дубликаты семестров
     const groupsMap = new Map<string, { group: Group; semesters: Semester[] }>();
 
+    if(!groupsMap){
+      throw ApiException.badRequest('Запись не найдена');
+    }
+
+    console.log({ groupsMap });
+
     assignments.forEach((assignment) => {
       const groupId = assignment.groupId;
       const semester = assignment.semester;
 
-      if (!groupId) {return;} // Пропускаем записи без группы или семестра
+      console.log({ groupId, semester, assignment });
+      if (!groupId && !semester) {
+        throw ApiException.badRequest('Запись не найдена');
+      } // Пропускаем записи без группы или семестра
 
       if (!groupsMap.has(groupId)) {
         groupsMap.set(groupId, {
@@ -337,13 +347,77 @@ export class AssigmentService {
 
       // Проверяем, есть ли уже такой семестр в массиве
       const existingSemesters = groupsMap.get(groupId)!.semesters;
-      const isDuplicate = existingSemesters.some((s) => s.id === semester.id);
 
-      if (!isDuplicate) {
+      if (!existingSemesters.length) {
         existingSemesters.push(semester);
+      } else {
+        console.log({ existingSemesters });
+        const isDuplicate = existingSemesters?.some((s) => s.id === semester.id);
+
+        if (!isDuplicate) {
+          existingSemesters.push(semester);
+        }
+
       }
+
     });
 
     return Array.from(groupsMap.values());
+  }
+
+  async getGroupByCourse (courseId: string, params: {semesterId: string} ) {
+    const assignment = await this.assignmentRepository.findAll({
+      where: { courseId: courseId, ...params },
+      include: [
+        {
+          model: Group,
+          as: 'group',
+          required: true,
+          include: [
+            {
+              model: University,
+              as: 'university',
+              attributes: ['name'],
+            },
+          ],
+        },
+      ],
+    });
+    if(!assignment){
+      throw ApiException.badRequest('Запись не найдена');
+    }
+
+    const uniqueGroups = assignment
+      .map((el) => el.group)
+      .reduce((acc, group) => {
+        if (!acc.find((g) => g.id === group.id)) {
+          acc.push({ id: group.id, label: group.groupCode });
+        }
+        return acc;
+      }, []);
+    return uniqueGroups;
+  }
+
+  async getSemesterByCourse (courseId: string, params: {groupId: string}) {
+    const assignment = await this.assignmentRepository.findAll({
+      where: { courseId: courseId, ...params },
+      include: [
+        {
+          model: Semester,
+          as: 'semester',
+          required: true,
+        },
+      ],
+    });
+
+    const uniqueSemesters = assignment
+      .map((el) => el.semester)
+      .reduce((acc, semester) => {
+        if (!acc.find((s) => s.id === semester.id)) {
+          acc.push({ id: semester.id, label: semester.name });
+        }
+        return acc;
+      }, []);
+    return uniqueSemesters;
   }
 }

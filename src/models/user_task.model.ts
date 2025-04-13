@@ -7,6 +7,7 @@ import {
 } from 'sequelize-typescript';
 import { Student } from './student.model';
 import { Task } from './tasks.model';
+import { TaskStatus } from 'src/common/enum/task';
 
 @Table({ tableName: 'user_task' })
 export class UserTask extends Model<UserTask> {
@@ -18,8 +19,8 @@ export class UserTask extends Model<UserTask> {
   })
     id: string;
 
-  @Column({ type: DataType.STRING, allowNull: false, defaultValue: 'pending' })
-    status: string;
+  @Column({ type: DataType.ENUM('NEW', 'REOPENED', 'RESOLVED', 'CLOSED'), allowNull: false, defaultValue: 'NEW' })
+    status: TaskStatus;
 
   @Column({ type: DataType.INTEGER, defaultValue: null })
     grade: number;
