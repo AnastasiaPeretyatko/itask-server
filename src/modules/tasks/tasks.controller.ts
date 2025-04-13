@@ -24,8 +24,8 @@ export class TasksController {
   }
 
   @Get('/student/:id')
-  async getTasksForStudent(@Param('id') id: string) {
-    return await this.taskService.getTasksForStudent(id);
+  async getTasksForStudent(@Param('id') id: string, @Query() query: {month: string}) {
+    return await this.taskService.getTasksForStudent(id, query?.month);
   }
 
   @Patch('user_task/:id')
