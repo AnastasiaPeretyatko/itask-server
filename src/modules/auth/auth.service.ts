@@ -28,6 +28,7 @@ export class AuthService {
         ...user.dataValues,
         ...professor,
         ...student,
+        fullName: professor.fullName || student.fullName,
       },
       token: await this.generateToken(user),
     };

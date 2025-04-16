@@ -15,9 +15,6 @@ export class StudentsService {
 
   async getOne(id: string) {
     const student = await this.studentRepository.findByPk(id, {
-      attributes: {
-        exclude: ['createdAt', 'updatedAt', 'user_id', 'group_id'],
-      },
       include: [
         {
           model: User,
@@ -132,7 +129,10 @@ export class StudentsService {
   }
 
   async getId(userId: string) {
-    const student = await this.studentRepository.findOne({ where: { user_id: userId } });
-    return { studentId: student?.id || null };
+    const student = await this.studentRepository.findOne({
+      where: { user_id: userId },
+      attributes: ['id', 'fullName', 'group_id'],
+    });
+    return { studentId: student?.id, ...student?.dataValues };
   }
 }

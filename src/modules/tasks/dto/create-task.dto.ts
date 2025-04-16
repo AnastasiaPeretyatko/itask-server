@@ -17,6 +17,7 @@ export const CreateTaskSchema = z.object({
     score: z.number().optional().nullable(),
     priority: z.string().optional().nullable(),
     status: z.string().optional().nullable(),
+    isAnswered: z.boolean().optional().nullable(),
   }),
 });
 

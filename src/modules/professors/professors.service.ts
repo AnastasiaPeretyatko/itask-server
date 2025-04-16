@@ -128,6 +128,6 @@ export class ProfessorsService {
 
   async getId(userId: string) {
     const professor = await this.professorRepository.findOne({ where: { user_id: userId } });
-    return { professorId: professor?.id || null };
+    return { professorId: professor?.id || null, fullName: professor?.fullName };
   }
 }
