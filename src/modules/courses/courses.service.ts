@@ -259,4 +259,24 @@ export class CoursesService {
 
     return result;
   }
+
+  async getAllCourseForStudent(query: { semesterId: string, groupId: string }) {
+    const assignments = await this.assigmentRepository.findAll({
+      attributes: ['courseId'],
+      where: { ...query },
+      include: [
+        {
+          model: Course,
+          as: 'course',
+        },
+      ],
+    });
+
+    // Извлекаем курсы и убираем дубликаты
+    const uniqueCourses = Array.from(
+      new Map(assignments.map((item) => [item.course.id, item.course])).values(),
+    );
+
+    return uniqueCourses;
+  }
 }

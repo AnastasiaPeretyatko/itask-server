@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { StudentsService } from '../students/students.service';
 import { SemesterDto } from './dto/create-semester.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { Assignment } from 'src/models/assignment.model';
 import { Group } from 'src/models/group.model';
 import { Semester } from 'src/models/semester.model';
 
@@ -11,6 +13,8 @@ export class SemestrsService {
   constructor(
     @InjectModel(Semester) private semestrsRepository: typeof Semester,
     @InjectModel(Group) private groupRepository: typeof Group,
+    @InjectModel(Assignment) private assignmentRepository: typeof Assignment,
+    private readonly studentService: StudentsService,
   ) {}
 
   async getOne(id: string) {
@@ -68,5 +72,27 @@ export class SemestrsService {
     });
 
     return data;
+  }
+
+  async getAllByStudent(id: string) {
+    const student = await this.studentService.getOne(id);
+
+    if (!student) {throw ApiException.notFound('Студент не найден');}
+
+    const assignments = await this.assignmentRepository.findAll({
+      where: { groupId: student.group_id },
+      include: [
+        {
+          model: Semester,
+          as: 'semester',
+        },
+      ],
+    });
+
+    const uniqueCourses = Array.from(
+      new Map(assignments.map((item) => [item.semester.id, item.semester])).values(),
+    );
+
+    return uniqueCourses.map((el) => ({ id: el.id, label: el.name }));
   }
 }

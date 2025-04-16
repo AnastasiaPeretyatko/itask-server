@@ -50,6 +50,9 @@ export class Task extends Model<Task> {
   @Column({ type: DataType.JSONB, defaultValue: null })
     tags: string | null;
 
+  @Column({ type: DataType.BOOLEAN, defaultValue: false })
+    isAnswered: boolean;
+
   @Column({ type: DataType.DATE })
     createdAt: Date;
 

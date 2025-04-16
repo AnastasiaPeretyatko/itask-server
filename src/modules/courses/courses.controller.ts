@@ -43,11 +43,6 @@ export class CoursesController {
     return await this.coursesService.getAll(query);
   }
 
-  @Get(':id')
-  async getOne(@Param('id') id: string) {
-    return await this.coursesService.getOne(id);
-  }
-
   @Get('info/:id')
   async getInfo(@Param('id') id: string) {
     return await this.coursesService.info(id);
@@ -62,6 +57,17 @@ export class CoursesController {
   @Post('assignment')
   async assigningGroupToCourse(@Body() { id, courseId }: { id: string, courseId: string }) {
     return await this.coursesService.assigningGroupToCourse(id, courseId);
+  }
+
+  // Получение курсов для студента
+  @Get('list')
+  async getAllCourseForSemester(@Query() query: {semesterId: string, groupId: string}) {
+    return await this.coursesService.getAllCourseForStudent(query);
+  }
+
+  @Get(':id')
+  async getOne(@Param('id') id: string) {
+    return await this.coursesService.getOne(id);
   }
 
   @Get(':id/students')

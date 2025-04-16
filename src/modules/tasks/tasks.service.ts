@@ -6,6 +6,7 @@ import { GetAllTaskDto } from './dto/getAll.dto';
 import { TaskStatus } from 'src/common/enum/task';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { Assignment } from 'src/models/assignment.model';
+import { Course } from 'src/models/courses.model';
 import { Professor } from 'src/models/professor.model';
 import { Student } from 'src/models/student.model';
 import { Task } from 'src/models/tasks.model';
@@ -117,13 +118,34 @@ export class TasksService {
           model: Task,
           as: 'tasks',
           through: { as: 'user_task' },
+          include: [
+            {
+              model: Assignment,
+              as: 'assignment',
+              attributes: ['courseId', 'groupId', 'semesterId'],
+              include: [{
+                model: Course,
+                as: 'course',
+                attributes: ['name'],
+              }],
+            },
+          ],
           ...(month && { where: taskWhere }),
           order: [['endDate', 'ASC']], // Сортировка по возрастанию endDate
         },
       ],
     });
 
-    return student?.tasks || [];
+    const tasks = student?.tasks.map((task) => {
+      // Создаем новый объект с нужными свойствами
+      const { assignment, ...taskWithoutAssignment } = task.toJSON();
+
+      return {
+        ...task.toJSON(),
+        courseName: assignment?.course?.name, // Добавляем courseName перед возвратом
+      };
+    }) || [];
+    return tasks;
   }
 
   async updateStatusTask(id: string, status: TaskStatus) {

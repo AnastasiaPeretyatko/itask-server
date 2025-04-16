@@ -41,6 +41,12 @@ export class SemestersController {
     return await this.semestrsService.getAll();
   }
 
+  //Получение семестров для студента
+  @Get('/student/:id')
+  async getAllByStudent(@Param('id') id: string) {
+    return await this.semestrsService.getAllByStudent(id);
+  }
+
   @Get('/list')
   async getList(@Query() { search } : {search: string}){
     return await this.semestrsService.list(search);
