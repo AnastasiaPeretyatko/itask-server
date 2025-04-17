@@ -11,6 +11,7 @@ import { SemestersModule } from './modules/semesters/semesters.module';
 import { StudentsModule } from './modules/students/students.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { UniversitiesModule } from './modules/universities/universities.module';
+import { UserTaskModule } from './modules/user_task/user_task.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -32,6 +33,7 @@ import { UsersModule } from './modules/users/users.module';
     TasksModule,
     AuthModule,
     AssigmentModule,
+    UserTaskModule,
   ],
 })
 export class AppModule {}

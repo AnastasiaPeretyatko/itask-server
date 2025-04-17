@@ -138,7 +138,7 @@ export class TasksService {
 
     const tasks = student?.tasks.map((task) => {
       // Создаем новый объект с нужными свойствами
-      const { assignment, ...taskWithoutAssignment } = task.toJSON();
+      const { assignment } = task.toJSON();
 
       return {
         ...task.toJSON(),
