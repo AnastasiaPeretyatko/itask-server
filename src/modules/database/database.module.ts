@@ -3,13 +3,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Assignment } from 'src/models/assignment.model';
 import { Course } from 'src/models/courses.model';
+import { DiscussionThread } from 'src/models/discussion_thread.model';
 import { Group } from 'src/models/group.model';
+import { Message } from 'src/models/message.model';
+import { Notification } from 'src/models/notification.model';
 import { Professor } from 'src/models/professor.model';
+import { Room } from 'src/models/room.model';
 import { Semester } from 'src/models/semester.model';
 import { Student } from 'src/models/student.model';
 import { Task } from 'src/models/tasks.model';
 import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
+import { UserRoom } from 'src/models/user_room.model';
 import { UserTask } from 'src/models/user_task.model';
 
 @Module({
@@ -34,6 +39,11 @@ import { UserTask } from 'src/models/user_task.model';
           Task,
           Assignment,
           UserTask,
+          DiscussionThread,
+          Message,
+          Notification,
+          Room,
+          UserRoom,
         ],
         autoLoadModels: true,
         synchronize: false,

@@ -3,11 +3,13 @@ import {
   BelongsToMany,
   Column,
   DataType,
-  ForeignKey, Model,
+  ForeignKey, HasMany, Model,
   Table,
 } from 'sequelize-typescript';
 import { Assignment } from './assignment.model';
+import { DiscussionThread } from './discussion_thread.model';
 import { Professor } from './professor.model';
+import { Room } from './room.model';
 import { Student } from './student.model';
 import { UserTask } from './user_task.model';
 
@@ -67,4 +69,16 @@ export class Task extends Model<Task> {
 
   @BelongsToMany(() => Student, () => UserTask)
     students: Student[];
+
+  @HasMany(() => DiscussionThread, {
+    foreignKey: 'task_id',
+    as: 'discussionThread',
+  })
+    discussionThread: DiscussionThread[];
+
+  @HasMany(() => Room, {
+    foreignKey: 'task_id',
+    as: 'room',
+  })
+    room: Room[];
 }
