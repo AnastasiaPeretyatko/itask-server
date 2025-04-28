@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ProfessorsModule } from '../professors/professors.module';
@@ -13,7 +13,7 @@ import { User } from 'src/models/user.model';
   providers: [AuthService],
   imports: [
     SequelizeModule.forFeature([User]),
-    UsersModule,
+    forwardRef(() => UsersModule),
     StudentsModule,
     ProfessorsModule,
     JwtModule.register({
@@ -23,6 +23,6 @@ import { User } from 'src/models/user.model';
       },
     }),
   ],
-  exports: [JwtModule],
+  exports: [JwtModule, AuthService],
 })
 export class AuthModule {}

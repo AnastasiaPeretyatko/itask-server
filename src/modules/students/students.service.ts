@@ -37,7 +37,7 @@ export class StudentsService {
     if (!student) {throw ApiException.notFound('Студент не найден');}
 
     const newStudent = {
-      ...student.toJSON(),
+      ...{ group_id: student.group_id, fullName: student.fullName, tel: student.tel },
       group: { id: student.group.id, groupCode: student.group?.groupCode },
     };
 
@@ -134,5 +134,12 @@ export class StudentsService {
       attributes: ['id', 'fullName', 'group_id'],
     });
     return { studentId: student?.id, ...student?.dataValues };
+  }
+
+  async getAllStudentIdsInGroup (group_id: string) {
+    return await this.studentRepository.findAll({
+      where: { group_id },
+      attributes: ['id'],
+    });
   }
 }

@@ -35,4 +35,9 @@ export class UsersService {
   async findByEmail (email: string) {
     return await this.userRepository.findOne({ where: { email } });
   }
+
+  async findByUserForChat (id: string) {
+    return await this.userRepository.findAll({ attributes: ['id', 'email'] });
+  }
+
 }
