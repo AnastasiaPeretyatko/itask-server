@@ -18,7 +18,8 @@ export class AssigmentService {
   ) {}
 
   async create(dto: CreateAssignmentDto) {
-    return await this.assignmentRepository.create(dto);
+    const data = await this.assignmentRepository.create(dto);
+    return { data: await this.find(data.id), message: 'Новая связь создана' };
   }
 
   async find(id: string) {
@@ -98,7 +99,7 @@ export class AssigmentService {
 
     if (!id) {
       const newAssignment = await this.create(dto);
-      const data = await this.find(newAssignment.id);
+      const data = await this.find(newAssignment.data.id);
       return { data, message: 'Новая связь создана' };
     }
 
@@ -112,7 +113,7 @@ export class AssigmentService {
       if (assignment.professorId !== professorId && assignment.professorId) {
         const { id, ...rest } = dto;
         const newAssignment = await this.create(rest);
-        const data = await this.find(newAssignment.id);
+        const data = await this.find(newAssignment.data.id);
         return { data, message: 'Новая связь создана' };
       }
 
@@ -127,7 +128,7 @@ export class AssigmentService {
       if (assignment.semesterId !== semesterId && assignment.semesterId) {
         const { id, ...rest } = dto;
         const newAssignment = await this.create(rest);
-        const data = await this.find(newAssignment.id);
+        const data = await this.find(newAssignment.data.id);
         return { data, message: 'Новая связь создана' };
       }
 
@@ -148,7 +149,7 @@ export class AssigmentService {
   }
 
   async getRecordForGroup (id: string){
-    const assignments = await this.assignmentRepository.findAll({
+    return await this.assignmentRepository.findAll({
       where: { courseId: id },
       attributes: ['id'],
       include: [
@@ -171,50 +172,15 @@ export class AssigmentService {
               as: 'university',
             },
           ],
+          order: [['course', 'DESC']],
         },
         {
           model: Semester,
           as: 'semester',
         },
       ],
+      order: [[{ model: Group, as: 'group' }, 'course', 'ASC']],
     });
-
-    const groupsId = [...new Set(assignments.map((g) => g.group ? g.group.id : null)) as unknown as string[]].filter((el) => el !== null);
-
-    if (!groupsId.length) {
-      throw ApiException.badRequest('Запись не найдена');
-    }
-
-    const groupsData = groupsId.map((gId, indx) => {
-      const acc = [];
-      assignments.forEach((data) => {
-        const { professor, semester, group, id } = data;
-        if (data.group && data.group.id === gId) {
-          // Инициализация acc[indx], если он еще не существует
-          if (!acc[indx]) {
-            acc[indx] = {
-              id,
-              group: group,
-              professors: [],
-              semesters: [],
-            };
-          }
-
-          // Добавление professors, если они не равны null
-          if (professor) {
-            acc[indx].professors.push(...(Array.isArray(professor) ? professor : [professor]));
-          }
-
-          // Добавление semesters, если они не равны null
-          if (semester) {
-            acc[indx].semesters.push(...(Array.isArray(semester) ? semester : [semester]));
-          }
-        }
-      });
-      return acc[indx] || { groups: null, professors: [], semesters: [] }; // Возвращаем acc[indx] или объект по умолчанию
-    });
-
-    return groupsData;
   }
 
   async foundCoursesForProfessor (id: string) {

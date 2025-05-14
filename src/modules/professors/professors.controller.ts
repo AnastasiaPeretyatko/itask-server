@@ -33,8 +33,10 @@ export class ProfessorsController {
   }
 
   @Patch('/:id')
-  @UsePipes(new ZodValidationPipe(UpdateProfessorSchema))
-  async updateUser(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProfessorDto) {
+  async updateUser(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(UpdateProfessorSchema)) dto: UpdateProfessorDto,
+  ) {
     return await this.professorsService.update(id, dto);
   }
 
