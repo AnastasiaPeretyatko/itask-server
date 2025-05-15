@@ -8,8 +8,11 @@ import {
   Post,
   UsePipes,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto, CreateCourseSchema } from './dto/create-course.dto';
 import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
@@ -60,9 +63,20 @@ export class CoursesController {
   }
 
   // Получение курсов для студента
+  @UseGuards(JwtAuthGuard)
   @Get('list')
-  async getAllCourseForSemester(@Query() query: {semesterId: string, groupId: string}) {
-    return await this.coursesService.getAllCourseForStudent(query);
+  async getAllCourseForSemester(@Req() req, @Query() query: {semesterId: string, groupId: string}) {
+    const { id } = req.user;
+    return await this.coursesService.getAllCourseForStudent(id, query);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/students')
+  async getStudentsAndTask(@Param('id') courseId: string, @Req() req, @Body() dto: {
+      semesterId: string,
+      groupId: string
+    }) {
+    return await this.coursesService.getStudentsAndTask(courseId, dto.semesterId, dto.groupId);
   }
 
   @Get(':id')
@@ -70,12 +84,10 @@ export class CoursesController {
     return await this.coursesService.getOne(id);
   }
 
-  @Get(':id/students')
-  async getStudentsAndTask(@Param('id') id: string, @Query() query: {
-    semesterId: string,
-    groupId: string
-    professorId: string
-  }) {
-    return await this.coursesService.getStudentsAndTask(id, query.semesterId, query.groupId, query.professorId);
+  @UseGuards(JwtAuthGuard)
+  @Post('tasks')
+  async findAllCourseAndCountTask(@Req() req) {
+    const { id } = req.user;
+    return await this.coursesService.findAllCourseAndCountTask(id);
   }
 }

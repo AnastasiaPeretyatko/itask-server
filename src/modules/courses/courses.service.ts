@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, QueryTypes } from 'sequelize';
+import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { PaginationDto } from 'src/common/validation/pagination';
@@ -9,8 +10,11 @@ import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
 import { Professor } from 'src/models/professor.model';
 import { Semester } from 'src/models/semester.model';
+import { Student } from 'src/models/student.model';
+import { Task } from 'src/models/tasks.model';
 import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
+import { UserTask } from 'src/models/user_task.model';
 
 @Injectable()
 export class CoursesService {
@@ -18,6 +22,8 @@ export class CoursesService {
     @InjectModel(Course) private courseRepository: typeof Course,
     @InjectModel(Professor) private professorRepository: typeof Professor,
     @InjectModel(Assignment) private assigmentRepository: typeof Assignment,
+    @InjectModel(Student) private studentRepository: typeof Student,
+    @InjectModel(UserTask) private userTaskRepository: typeof UserTask,
   ) {}
 
   async find(id: string) {
@@ -219,51 +225,74 @@ export class CoursesService {
     return assignment;
   }
 
-  async getStudentsAndTask(id: string, semesterId: string, groupId: string, professorId: string) {
-    const query = `
-      SELECT 
-        s.*,
-        (
-          SELECT json_agg(
-            json_build_object(
-              'task', to_jsonb(t.*),
-              'user_task', to_jsonb(ut.*)
-            )
-          )
-          FROM user_task ut
-          JOIN task t ON ut.task_id = t.id
-          WHERE ut.student_id = s.id
-        ) AS task,
-        (
-          SELECT COALESCE(SUM(grade), 0)
-          FROM user_task
-          WHERE student_id = s.id
-        ) AS "totalGrade"
-      FROM "assignment" a
-      JOIN students s ON a."groupId" = s.group_id
-      WHERE a."groupId" = :groupId
-        AND a."courseId" = :courseId
-        AND a."semesterId" = :semesterId
-      GROUP BY s.id
-    `;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getStudentsAndTask(courseId: string, semesterId: string, groupId: string) {
+    const result = await this.studentRepository.findAll({
+      include: [
+        {
+          model: Task,
+          as: 'tasks',
+          through: { as: 'user_task' },
+          include: [
+            {
+              model: Assignment,
+              as: 'assignment',
+              attributes: [],
+              include: [
+                {
+                  model: Course,
+                  as: 'course',
+                  where: { id: courseId },
+                  attributes: [],
+                },
+                {
+                  model: Group,
+                  as: 'group',
+                  where: { id: groupId },
+                  attributes: [],
+                },
+                {
+                  model: Semester,
+                  as: 'semester',
+                  where: { id: semesterId },
+                  attributes: [],
+                },
+              ],
+            },
+          ],
 
-    const result = await this.assigmentRepository.sequelize.query(query, {
-      type: QueryTypes.SELECT,
-      replacements: {
-        courseId: id,
-        semesterId,
-        groupId,
-        // professorId,
-      },
+        },
+
+      ],
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+            SELECT COALESCE(SUM("user_task"."grade"), 0)
+            FROM "user_task" AS "user_task"
+            INNER JOIN "task" AS "task" ON "task"."id" = "user_task"."task_id"
+            INNER JOIN "assignment" AS "assignment" ON "assignment"."id" = "task"."assignmentId"
+            WHERE
+              "user_task"."student_id" = "Student"."id"
+              AND "assignment"."courseId" = '${courseId}'
+              AND "assignment"."groupId" = '${groupId}'
+              AND "assignment"."semesterId" = '${semesterId}'
+          )`),
+            'totalScore',
+          ],
+        ] },
     });
-
     return result;
   }
 
-  async getAllCourseForStudent(query: { semesterId: string, groupId: string }) {
+  async getAllCourseForStudent(userId: string,query: { semesterId: string, groupId: string }) {
+    const group = await this.studentRepository.findOne({ where: { user_id: userId } });
+
+    if (!group) {throw ApiException.notFound('Студент не найден');}
+
     const assignments = await this.assigmentRepository.findAll({
       attributes: ['courseId'],
-      where: { ...query },
+      where: { ...query, groupId: group.group_id },
       include: [
         {
           model: Course,
@@ -278,5 +307,50 @@ export class CoursesService {
     );
 
     return uniqueCourses;
+  }
+
+  async findAllCourseAndCountTask(id: string) {
+    const student = await this.studentRepository.findOne({ where: { user_id: id } });
+
+    if (!student) {throw ApiException.notFound('Студент не найден');}
+
+    const userTasks = await this.assigmentRepository.findAll({
+      attributes: [
+        [Sequelize.fn('COUNT', Sequelize.col('tasks.id')), 'taskCount'],
+        [
+          Sequelize.fn('SUM', Sequelize.col('tasks->userTask.grade')),
+          'totalGrade',
+        ],
+      ],
+      include: [
+        {
+          model: Course,
+          as: 'course',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: Semester,
+          as: 'semester',
+          attributes: [],
+          order: [['startDate', 'DESC']],
+        },
+        {
+          model: Task,
+          attributes: [],
+          as: 'tasks',
+          include: [
+            {
+              model: UserTask,
+              as: 'userTask',
+              where: { student_id: student.id },
+              attributes: [],
+            },
+          ],
+        },
+      ],
+      group: ['course.id', 'course.name'],
+      raw: true,
+    });
+    return userTasks;
   }
 }

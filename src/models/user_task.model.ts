@@ -1,4 +1,5 @@
 import {
+  BelongsTo,
   Column,
   DataType,
   ForeignKey,
@@ -41,4 +42,10 @@ export class UserTask extends Model<UserTask> {
   @ForeignKey(() => Student)
   @Column({ type: DataType.UUID })
     student_id: string;
+
+  @BelongsTo(() => Task)
+    task: Task;
+
+  @BelongsTo(() => Student)
+    student: Student;
 }
