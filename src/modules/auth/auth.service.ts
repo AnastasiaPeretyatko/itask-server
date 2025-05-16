@@ -36,7 +36,7 @@ export class AuthService {
 
   private async generateToken(user: User) {
     const payload = { email: user.email, id: user.id, roles: user.role };
-    return this.jwtService.sign(payload);
+    return this.jwtService.sign(payload, { secret: process.env.JWT_ACCESS_TOKEN_SECRET_KEY || 'SECRET' });
   }
 
   private async validateUser(dto: LoginDto) {

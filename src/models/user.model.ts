@@ -1,6 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { BelongsToMany, Column, DataType, HasMany, HasOne, Model, Table } from 'sequelize-typescript';
 import { DiscussionThread } from './discussion_thread.model';
+import { Document } from './documents.model';
 import { Message } from './message.model';
 import { Notification } from './notification.model';
 import { Professor } from './professor.model';
@@ -80,6 +81,9 @@ export class User extends Model<User> {
     as: 'room',
   })
     room: Room;
+
+  @HasMany(() => Document)
+    document: Document;
 
   static async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 10);

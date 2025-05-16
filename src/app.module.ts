@@ -5,6 +5,7 @@ import { AssigmentModule } from './modules/assigment/assigment.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CoursesModule } from './modules/courses/courses.module';
 import { DatabaseModule } from './modules/database/database.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 import { GroupModule } from './modules/groups/groups.module';
 import { MessageModule } from './modules/message/message.module';
 import { ProfessorsModule } from './modules/professors/professors.module';
@@ -40,6 +41,7 @@ import { SocketModule } from './socket/socket.module';
     SocketModule,
     MessageModule,
     RoomModule,
+    DocumentsModule,
   ],
 })
 export class AppModule {}
