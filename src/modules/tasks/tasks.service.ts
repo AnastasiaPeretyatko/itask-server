@@ -21,7 +21,7 @@ export class TasksService {
     @InjectModel(UserTask) private userTaskRepository: typeof UserTask,
   ) {}
 
-  async one(id: string) {
+  async one(id: string, userId?: string) {
     const task = await this.taskRepository.findOne({
       where: { id },
       include: [
@@ -39,6 +39,19 @@ export class TasksService {
         },
       ],
     });
+    const student = await this.studentRepository.findOne({ where: { user_id: userId } });
+    if(!student) {
+      return task;
+    }
+
+    const isAnswer = await this.userTaskRepository.findOne({
+      where: { task_id: id, student_id: student.id },
+    });
+
+    if(!isAnswer) {
+      task.dataValues.isAnswered = false;
+    }
+
     return task;
   }
 
@@ -128,6 +141,11 @@ export class TasksService {
                 as: 'course',
                 attributes: ['name'],
               }],
+            },
+            {
+              model: Professor,
+              as: 'creatorBy',
+              attributes: ['id', 'name'],
             },
           ],
           ...(month && { where: taskWhere }),

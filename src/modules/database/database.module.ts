@@ -4,6 +4,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { Assignment } from 'src/models/assignment.model';
 import { Course } from 'src/models/courses.model';
 import { DiscussionThread } from 'src/models/discussion_thread.model';
+import { DocumentTask } from 'src/models/document_task.model';
 import { Document } from 'src/models/documents.model';
 import { Group } from 'src/models/group.model';
 import { Message } from 'src/models/message.model';
@@ -46,6 +47,7 @@ import { UserTask } from 'src/models/user_task.model';
           Room,
           UserRoom,
           Document,
+          DocumentTask,
         ],
         autoLoadModels: true,
         synchronize: false,

@@ -1,5 +1,7 @@
-import { BelongsTo, Column, CreatedAt, DataType, DeletedAt, ForeignKey, HasMany, Model, Table, UpdatedAt } from 'sequelize-typescript';
+import { BelongsTo, BelongsToMany, Column, CreatedAt, DataType, DeletedAt, ForeignKey, HasMany, Model, Table, UpdatedAt } from 'sequelize-typescript';
+import { DocumentTask } from './document_task.model';
 import { User } from './user.model';
+import { UserTask } from './user_task.model';
 
 @Table({ tableName: 'documents' })
 export class Document extends Model<Document> {
@@ -45,4 +47,7 @@ export class Document extends Model<Document> {
 
   @HasMany(() => Document, 'parentId')
     children: Document[];
+
+  @BelongsToMany(() => UserTask, () => DocumentTask)
+    tasks: UserTask[];
 }

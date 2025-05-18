@@ -1,13 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { Document } from 'src/models/documents.model';
 import { UserTask } from 'src/models/user_task.model';
 
 @Injectable()
 export class UserTaskService {
   constructor(
     @InjectModel(UserTask) private userTaskRepository: typeof UserTask,
+    @InjectModel(Document) private documentRepository: typeof Document,
   ) {}
+
+  async addAnswer({ taskId, documentIds = [], answer }: {taskId: string, documentIds: string[], answer: string}) {
+    const task = await this.find(taskId);
+
+    if(!task) {
+      throw ApiException.badRequest('Запись не найдена');
+    }
+
+    const documents = await this.documentRepository.findAll({
+      where: { id: { [Op.in]: documentIds } },
+    });
+
+    await task.update({ answer });
+    await task.$add('documents', documents);
+    return { message: 'Ответ успешно сохранен' };
+  }
 
   async find (id: string) {
     const task = await this.userTaskRepository.findByPk(id);

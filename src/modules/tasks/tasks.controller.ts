@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateTaskDto, CreateTaskSchema } from './dto/create-task.dto';
 import { GetAllTaskDto, GetAllTaskSchema } from './dto/getAll.dto';
 import { TasksService } from './tasks.service';
@@ -31,5 +32,11 @@ export class TasksController {
   @Patch('user_task/:id')
   async updateStatusTask(@Param('id') id: string, @Body() dto: { status: TaskStatus }) {
     return await this.taskService.updateStatusTask(id, dto.status);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(@Req() req, @Param('id') id: string) {
+    return await this.taskService.one(id, req.user.id);
   }
 }

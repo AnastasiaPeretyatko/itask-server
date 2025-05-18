@@ -1,11 +1,14 @@
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
   DataType,
   ForeignKey,
   Model,
   Table,
 } from 'sequelize-typescript';
+import { DocumentTask } from './document_task.model';
+import { Document } from './documents.model';
 import { Student } from './student.model';
 import { Task } from './tasks.model';
 import { TaskStatus } from 'src/common/enum/task';
@@ -48,4 +51,7 @@ export class UserTask extends Model<UserTask> {
 
   @BelongsTo(() => Student)
     student: Student;
+
+  @BelongsToMany(() => Document, () => DocumentTask)
+    documents: Document[];
 }
