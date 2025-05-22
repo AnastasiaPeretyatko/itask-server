@@ -40,6 +40,7 @@ export class CoursesController {
     return await this.coursesService.delete(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   // @UsePipes(new ZodValidationPipe(PaginationSchema))
   async getAll(@Req() req, @Query() query: PaginationDto & { groupId?: string, semesterId?: string, courseId?: string }) {

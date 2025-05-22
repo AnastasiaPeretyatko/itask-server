@@ -47,7 +47,10 @@ export class Course extends Model<Course> {
 
   // new changes
 
-  @BelongsToMany(() => Professor, () => Assignment)
+  @BelongsToMany(() => Professor, {
+    through: () => Assignment,
+    as: 'professors',
+  })
     professors: Professor[];
 
   @BelongsToMany(() => Group, () => Assignment)

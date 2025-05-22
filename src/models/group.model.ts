@@ -11,6 +11,7 @@ import {
 import { Assignment } from './assignment.model';
 import { Course } from './courses.model';
 import { Professor } from './professor.model';
+import { Semester } from './semester.model';
 import { Student } from './student.model';
 import { University } from './university.model';
 import { Degree } from 'src/common/enum/degree';
@@ -101,9 +102,12 @@ export class Group extends Model<Group> {
   @BelongsToMany(() => Course, () => Assignment)
     courses: Course[];
 
-  @BelongsToMany(() => Professor, () => Assignment)
+  @BelongsToMany(() => Professor, {
+    through: () => Assignment,
+    as: 'professors',
+  })
     professors: Professor[];
 
-  @BelongsToMany(() => Group, () => Assignment)
-    groups: Group[];
+  @BelongsToMany(() => Semester, () => Assignment)
+    groups: Semester[];
 }

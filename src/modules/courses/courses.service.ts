@@ -117,9 +117,18 @@ export class CoursesService {
   //TODO создать таску на тему того что теперь можно передавать params
   async getAll(id: string, query: PaginationDto & { groupId?: string, semesterId?: string, courseId?: string }) {
     const user = await this.userRepository.findByPk(id);
-    const whereUser = user.role === ROLE.ADMIN ? {} : { id: user.id };
+    let whereGroup = {};
+    let whereUser = {};
+    if (user.role === ROLE.STUDENT) {
+      const student = await this.studentRepository.findOne({
+        where: { user_id: user.id },
+      });
+      whereGroup = { id: student?.group_id };
+    } else if (user.role === ROLE.PROFESSOR) {
+      whereUser = { id: user.id };
+    }
 
-    const { limit = 10, page = 1, search, ...params } = query;
+    const { limit = 10, page = 1, search = '', ...params } = query;
     const { count, rows: data } = await this.courseRepository.findAndCountAll({
       where: {
         name: { [Op.like]: `%${search}%` },
@@ -128,19 +137,27 @@ export class CoursesService {
         {
           model: Professor,
           as: 'professors',
-          required: true,
-          through: { as: 'assignment', attributes: [], where: { ...params } },
+          through: { as: 'assignment', attributes: [] },
           include: [
             {
               model: User,
               as: 'user',
-              attributes: ['fullName', 'avatar', 'email'],
+              required: Object.keys(whereUser).length !== 0,
               where: whereUser,
+              attributes: ['fullName', 'avatar', 'email'],
             },
           ],
         },
+        {
+          model: Group,
+          as: 'groups',
+          required: Object.keys(whereGroup).length !== 0,
+          through: { as: 'assignment', attributes: [], where: { ...params } },
+          where: whereGroup,
+        },
       ],
       distinct: true,
+      subQuery: false,
       limit,
       offset: limit * (page - 1),
     });

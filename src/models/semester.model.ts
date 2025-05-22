@@ -54,6 +54,9 @@ export class Semester extends Model<Semester> {
   @BelongsToMany(() => Group, () => Assignment)
     groups: Group[];
 
-  @BelongsToMany(() => Professor, () => Assignment)
+  @BelongsToMany(() => Professor, {
+    through: () => Assignment,
+    as: 'professors',
+  })
     professors: Professor[];
 }
