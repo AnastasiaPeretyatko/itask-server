@@ -58,9 +58,4 @@ export class GroupsController {
   async getStudentsByGroup(@Param('id') id: string) {
     return await this.groupsService.getStudentsByGroup(id);
   }
-
-  @Get('/:id/courses')
-  async getCoursesByGroup(@Param('id') id: string) {
-    return await this.groupsService.getCoursesByGroup(id);
-  }
 }

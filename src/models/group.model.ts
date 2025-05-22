@@ -1,5 +1,5 @@
 import {
-  BelongsTo, Column,
+  BelongsTo, BelongsToMany, Column,
   CreatedAt,
   DataType,
   ForeignKey,
@@ -9,6 +9,8 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 import { Assignment } from './assignment.model';
+import { Course } from './courses.model';
+import { Professor } from './professor.model';
 import { Student } from './student.model';
 import { University } from './university.model';
 import { Degree } from 'src/common/enum/degree';
@@ -95,6 +97,13 @@ export class Group extends Model<Group> {
 
   // new changes
 
-  @HasMany(() => Assignment)
-    assignments: Assignment[];
+
+  @BelongsToMany(() => Course, () => Assignment)
+    courses: Course[];
+
+  @BelongsToMany(() => Professor, () => Assignment)
+    professors: Professor[];
+
+  @BelongsToMany(() => Group, () => Assignment)
+    groups: Group[];
 }

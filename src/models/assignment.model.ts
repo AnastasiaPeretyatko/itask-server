@@ -1,5 +1,7 @@
 import {
-  BelongsTo, Column, DataType,
+  BelongsTo,
+  Column,
+  DataType,
   ForeignKey,
   HasMany,
   Model,
@@ -21,32 +23,32 @@ export class Assignment extends Model<Assignment> {
   })
     id: string;
 
+  @ForeignKey(() => Professor)
+  @Column(DataType.UUID)
+    professorId: string;
+
   @ForeignKey(() => Course)
-  @Column({ type: DataType.UUID })
+  @Column(DataType.UUID)
     courseId: string;
 
-  @ForeignKey(() => Professor)
-  @Column({ type: DataType.UUID, allowNull: true })
-    professorId: string | null;
-
   @ForeignKey(() => Group)
-  @Column({ type: DataType.UUID, allowNull: true })
-    groupId: string | null;
+  @Column(DataType.UUID)
+    groupId: string;
 
   @ForeignKey(() => Semester)
-  @Column({ type: DataType.UUID, allowNull: true })
-    semesterId: string | null;
+  @Column(DataType.UUID)
+    semesterId: string;
 
-  @BelongsTo(() => Course, { foreignKey: 'courseId', onDelete: 'CASCADE', as: 'course' })
-    course: Course;
-
-  @BelongsTo(() => Professor, { foreignKey: 'professorId', onDelete: 'CASCADE', as: 'professor' })
+  @BelongsTo(() => Professor)
     professor: Professor;
 
-  @BelongsTo(() => Group, { foreignKey: 'groupId', onDelete: 'CASCADE', as: 'group' })
+  @BelongsTo(() => Course)
+    course: Course;
+
+  @BelongsTo(() => Group)
     group: Group;
 
-  @BelongsTo(() => Semester, { foreignKey: 'semesterId', onDelete: 'CASCADE', as: 'semester' })
+  @BelongsTo(() => Semester)
     semester: Semester;
 
   @HasMany(() => Task)

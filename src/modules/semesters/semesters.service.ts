@@ -79,20 +79,17 @@ export class SemestrsService {
 
     if (!student) {throw ApiException.notFound('Студент не найден');}
 
-    const assignments = await this.assignmentRepository.findAll({
-      where: { groupId: student.group_id },
+    return await this.semestrsRepository.findAll({
+      attributes: [['name', 'label'], 'id'],
       include: [
         {
-          model: Semester,
-          as: 'semester',
+          model: Group,
+          as: 'groups',
+          through: { as: 'assignment' },
+          where: { id: student.group_id },
+          attributes: [],
         },
       ],
     });
-
-    const uniqueCourses = Array.from(
-      new Map(assignments.map((item) => [item.semester.id, item.semester])).values(),
-    );
-
-    return uniqueCourses.map((el) => ({ id: el.id, label: el.name }));
   }
 }

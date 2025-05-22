@@ -15,6 +15,7 @@ import { User } from 'src/models/user.model';
 export class AssigmentService {
   constructor(
     @InjectModel(Assignment) private assignmentRepository: typeof Assignment,
+    @InjectModel(Course) private courseRepository: typeof Course,
   ) {}
 
   async create(dto: CreateAssignmentDto) {
@@ -49,6 +50,18 @@ export class AssigmentService {
         {
           model: Semester,
           as: 'semester',
+        },
+      ],
+    });
+  }
+
+  async getAll () {
+    return await this.courseRepository.findAll({
+      include: [
+        {
+          model: Professor,
+          as: 'professors',
+          through: { as: 'assignment', attributes: [] },
         },
       ],
     });

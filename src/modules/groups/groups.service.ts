@@ -4,7 +4,7 @@ import { GroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { PaginationDto } from 'src/common/validation/pagination';
-import { Assignment } from 'src/models/assignment.model';
+// import { Assignment } from 'src/models/assignment.model';
 import { Group } from 'src/models/group.model';
 import { Student } from 'src/models/student.model';
 import { University } from 'src/models/university.model';
@@ -16,7 +16,7 @@ export class GroupsService {
     @InjectModel(Group) private groupRepository: typeof Group,
     @InjectModel(University) private universityRepository: typeof University,
     @InjectModel(Student) private studentsRepository: typeof Student,
-    @InjectModel(Assignment) private assignmentRepository: typeof Assignment,
+    // @InjectModel(Assignment) private assignmentRepository: typeof Assignment,
   ) { }
 
   async getOne(id: string) {
@@ -138,34 +138,5 @@ export class GroupsService {
       ],
     });
     return students;
-  }
-
-  async getCoursesByGroup (id: string) {
-    const groups = await this.assignmentRepository.findAll({
-      where: { courseId: id },
-      include: [
-        {
-          model: Group,
-          as: 'groups',
-          include: [
-            {
-              model: University,
-              as: 'university',
-            },
-          ],
-        },
-      ],
-    });
-
-    const exists = groups.reduce((acc, assignment) => {
-      const { groupId } = assignment;
-      if (!acc.some((item) => item.groupId === groupId)) {
-        acc.push(assignment);
-      }
-
-      return acc;
-    }, [] as Assignment[]);
-
-    return exists.map((el) => ({ id: el.groupId, name: el.group.groupCode }));
   }
 }

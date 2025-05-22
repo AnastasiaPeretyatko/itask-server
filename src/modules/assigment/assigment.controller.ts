@@ -16,6 +16,13 @@ export class AssigmentController {
     return await this.assigmentCourseService.create(dto);
   }
 
+  @Get()
+  async getAll() {
+    return await this.assigmentCourseService.getAll();
+  }
+
+  //TODO исправить update
+
   @Patch()
   @UsePipes(new ZodValidationPipe(UpdateAssignmentSchema))
   async updateAssignment(@Body() dto: UpdateAssignmentDto){
@@ -32,10 +39,10 @@ export class AssigmentController {
     return await this.assigmentCourseService.foundCoursesForProfessor(id);
   }
 
-  // @Get('semester/:id')
-  // async foundSemestersForCourse(@Param('id') id: string){
-  //   return await this.assigmentCourseService.foundSemestersForCourse(id);
-  // }
+  @Get('semester/:id')
+  async foundSemestersForCourse(@Param('id') id: string){
+    return await this.assigmentCourseService.foundSemestersForCourse(id);
+  }
 
   @Get('group/:id')
   async getGroupByCourse(@Param('id') id: string, @Query() params: {semesterId: string} ){
@@ -52,5 +59,4 @@ export class AssigmentController {
   async foundGroupsForCourse(@Param('id') id: string, @Param('semester_id') semester_id: string){
     return await this.assigmentCourseService.foundGroupsForCourse(id, semester_id);
   }
-
 }

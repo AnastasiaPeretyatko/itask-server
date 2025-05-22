@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { CreateCourseDto } from './dto/create-course.dto';
+import { ROLE } from 'src/common/enum/role';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { PaginationDto } from 'src/common/validation/pagination';
 import { Assignment } from 'src/models/assignment.model';
@@ -12,7 +13,6 @@ import { Professor } from 'src/models/professor.model';
 import { Semester } from 'src/models/semester.model';
 import { Student } from 'src/models/student.model';
 import { Task } from 'src/models/tasks.model';
-import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
 import { UserTask } from 'src/models/user_task.model';
 
@@ -21,28 +21,27 @@ export class CoursesService {
   constructor(
     @InjectModel(Course) private courseRepository: typeof Course,
     @InjectModel(Professor) private professorRepository: typeof Professor,
-    @InjectModel(Assignment) private assigmentRepository: typeof Assignment,
+    @InjectModel(Assignment) private assignmentRepository: typeof Assignment,
     @InjectModel(Student) private studentRepository: typeof Student,
-    @InjectModel(UserTask) private userTaskRepository: typeof UserTask,
+    @InjectModel(User) private userRepository: typeof User,
+
+    // @InjectModel(UserTask) private userTaskRepository: typeof UserTask,
   ) {}
 
-  async find(id: string) {
+  //? Исправлено
+  async findByPk(id: string) {
     return await this.courseRepository.findOne({
       where: { id },
       include: [
         {
-          model: Assignment,
-          as: 'assignments',
+          model: Professor,
+          as: 'professors',
+          through: { as: 'assignment', attributes: [] },
           include: [
             {
-              model: Professor,
-              as: 'professor',
-              include: [
-                {
-                  model: User,
-                  as: 'user',
-                },
-              ],
+              model: User,
+              as: 'user',
+              attributes: ['fullName', 'avatar', 'email'],
             },
           ],
         },
@@ -50,10 +49,12 @@ export class CoursesService {
     });
   }
 
+  //? Done
   async getOne(id: string) {
-    return await this.find(id);
+    return await this.findByPk(id);
   }
 
+  //? Done
   async create(dto: CreateCourseDto) {
     const { name, description, professorIds } = dto;
 
@@ -74,68 +75,72 @@ export class CoursesService {
         semester_id: null,
       }));
 
-      await this.assigmentRepository.bulkCreate(assignments);
+      await this.assignmentRepository.bulkCreate(assignments);
     }
 
     return {
-      data: await this.find(course.id),
+      data: await this.findByPk(course.id),
       message: 'Курс успешно создан',
     };
   }
 
   async update(id: string, dto: CreateCourseDto) {
-    const course = await this.find(id);
+    const course = await this.findByPk(id);
 
-    if (!course) {throw ApiException.notFound('Курс не найден');}
+    if (!course) {
+      throw ApiException.notFound('Курс не найден');
+    }
 
     await course.update(dto);
     await course.save();
 
     return {
-      data: await this.find(id),
+      data: await this.findByPk(id),
       message: 'Курс успешно обновлен',
     };
   }
 
   async delete(id: string) {
-    const course = await this.find(id);
+    const course = await this.findByPk(id);
 
-    if (!course) {throw ApiException.notFound('Курс не найден');}
+    if (!course) {
+      throw ApiException.notFound('Курс не найден');
+    }
 
-    const assignments = await this.assigmentRepository.findAll({
-      where: { courseId: id },
-    });
-
+    //TODO нужно проверить кейс, если у assignment есть задачи не вызовет ли это ошибки
+    await this.assignmentRepository.destroy({ where: { courseId: id } });
     await course.destroy();
-    assignments.map(async (assignment) => await assignment.destroy());
 
     return { message: 'Курс успешно удален' };
   }
 
-  async getAll(query: PaginationDto) {
-    const { limit = 10, page = 1, search } = query;
+  //TODO создать таску на тему того что теперь можно передавать params
+  async getAll(id: string, query: PaginationDto & { groupId?: string, semesterId?: string, courseId?: string }) {
+    const user = await this.userRepository.findByPk(id);
+    const whereUser = user.role === ROLE.ADMIN ? {} : { id: user.id };
+
+    const { limit = 10, page = 1, search, ...params } = query;
     const { count, rows: data } = await this.courseRepository.findAndCountAll({
       where: {
         name: { [Op.like]: `%${search}%` },
       },
       include: [
         {
-          model: Assignment,
-          as: 'assignments',
+          model: Professor,
+          as: 'professors',
+          required: true,
+          through: { as: 'assignment', attributes: [], where: { ...params } },
           include: [
             {
-              model: Professor,
-              as: 'professor',
-              include: [
-                {
-                  model: User,
-                  as: 'user',
-                },
-              ],
+              model: User,
+              as: 'user',
+              attributes: ['fullName', 'avatar', 'email'],
+              where: whereUser,
             },
           ],
         },
       ],
+      distinct: true,
       limit,
       offset: limit * (page - 1),
     });
@@ -147,85 +152,6 @@ export class CoursesService {
     return await this.courseRepository.findByPk(id);
   }
 
-  async getGroups(id: string) {
-    const groups = await this.assigmentRepository.findAll({
-      where: { courseId: id },
-      attributes: ['id'],
-      include: [
-        {
-          model: Professor,
-          as: 'professor',
-          include: [
-            {
-              model: User,
-              as: 'user',
-            },
-          ],
-        },
-        {
-          model: Group,
-          as: 'groups',
-          include: [
-            {
-              model: University,
-              as: 'university',
-            },
-          ],
-        },
-        {
-          model: Semester,
-          as: 'semester',
-        },
-      ],
-    });
-
-    const groupsId = [...new Set(groups.map((g) => g.group ? g.group.id : null)) as unknown as string[]].filter((el) => el !== null);
-
-    if (!groupsId.length) {return;}
-
-    const groupsData = groupsId.map((gId, indx) => {
-      const acc = [];
-      groups.forEach((data) => {
-        const { professor, semester, group, id } = data;
-        if (data.group && data.group.id === gId) {
-
-          // Инициализация acc[indx], если он еще не существует
-          if (!acc[indx]) {
-            acc[indx] = {
-              id,
-              group,
-              professors: [],
-              semesters: [],
-            };
-          }
-
-          // Добавление professors, если они не равны null
-          if (professor) {
-            acc[indx].professors.push(...(Array.isArray(professor) ? professor : [professor]));
-          }
-
-          // Добавление semesters, если они не равны null
-          if (semester) {
-            acc[indx].semesters.push(...(Array.isArray(semester) ? semester : [semester]));
-          }
-        }
-      });
-      return acc[indx] || { groups: null, professors: [], semesters: [] }; // Возвращаем acc[indx] или объект по умолчанию
-    });
-
-    return groupsData;
-  }
-
-  async assigningGroupToCourse(group_id: string, course_id: string) {
-    const assignment = await this.assigmentRepository.create({
-      groupId: group_id,
-      courseId: course_id,
-    });
-
-    return assignment;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getStudentsAndTask(courseId: string, semesterId: string, groupId: string) {
     const result = await this.studentRepository.findAll({
       include: [
@@ -285,36 +211,13 @@ export class CoursesService {
     return result;
   }
 
-  async getAllCourseForStudent(userId: string,query: { semesterId: string, groupId: string }) {
-    const group = await this.studentRepository.findOne({ where: { user_id: userId } });
-
-    if (!group) {throw ApiException.notFound('Студент не найден');}
-
-    const assignments = await this.assigmentRepository.findAll({
-      attributes: ['courseId'],
-      where: { ...query, groupId: group.group_id },
-      include: [
-        {
-          model: Course,
-          as: 'course',
-        },
-      ],
-    });
-
-    // Извлекаем курсы и убираем дубликаты
-    const uniqueCourses = Array.from(
-      new Map(assignments.map((item) => [item.course.id, item.course])).values(),
-    );
-
-    return uniqueCourses;
-  }
-
+  //TODO можно попробовать переписать
   async findAllCourseAndCountTask(id: string) {
     const student = await this.studentRepository.findOne({ where: { user_id: id } });
 
     if (!student) {throw ApiException.notFound('Студент не найден');}
 
-    const userTasks = await this.assigmentRepository.findAll({
+    const userTasks = await this.assignmentRepository.findAll({
       attributes: [
         [Sequelize.fn('COUNT', Sequelize.col('tasks.id')), 'taskCount'],
         [
