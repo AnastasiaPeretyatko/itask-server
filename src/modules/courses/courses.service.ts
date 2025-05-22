@@ -25,7 +25,7 @@ export class CoursesService {
     @InjectModel(Student) private studentRepository: typeof Student,
     @InjectModel(User) private userRepository: typeof User,
 
-    // @InjectModel(UserTask) private userTaskRepository: typeof UserTask,
+    @InjectModel(UserTask) private userTaskRepository: typeof UserTask,
   ) {}
 
   //? Исправлено
@@ -115,7 +115,7 @@ export class CoursesService {
   }
 
   //TODO создать таску на тему того что теперь можно передавать params
-  async getAll(id: string, query: PaginationDto & { groupId?: string, semesterId?: string, courseId?: string }) {
+  async getAll(id: string, query: PaginationDto & { groupId?: string, semesterId?: string, courseId?: string, professorId?: string }) {
     const user = await this.userRepository.findByPk(id);
     let whereGroup = {};
     let whereUser = {};
@@ -137,6 +137,7 @@ export class CoursesService {
         {
           model: Professor,
           as: 'professors',
+          required: Object.keys(whereUser).length !== 0,
           through: { as: 'assignment', attributes: [] },
           include: [
             {
@@ -170,62 +171,54 @@ export class CoursesService {
   }
 
   async getStudentsAndTask(courseId: string, semesterId: string, groupId: string) {
-    const result = await this.studentRepository.findAll({
+    const students = await this.studentRepository.findAll({
       include: [
+        {
+          model: Group,
+          as: 'group',
+          where: { id: groupId },
+          include: [
+            {
+              model: Semester,
+              // as: 'semester',
+              where: { id: semesterId },
+              through: { attributes: [] },
+            },
+            {
+              model: Course,
+              // as: 'course',
+              where: { id: courseId },
+              through: { attributes: [] },
+            },
+          ],
+        },
         {
           model: Task,
           as: 'tasks',
-          through: { as: 'user_task' },
-          include: [
-            {
-              model: Assignment,
-              as: 'assignment',
-              attributes: [],
-              include: [
-                {
-                  model: Course,
-                  as: 'course',
-                  where: { id: courseId },
-                  attributes: [],
-                },
-                {
-                  model: Group,
-                  as: 'group',
-                  where: { id: groupId },
-                  attributes: [],
-                },
-                {
-                  model: Semester,
-                  as: 'semester',
-                  where: { id: semesterId },
-                  attributes: [],
-                },
-              ],
-            },
-          ],
-
+          through: { as: 'solutions' }, // user_task, связь many-to-many
         },
-
       ],
       attributes: {
         include: [
           [
             Sequelize.literal(`(
-            SELECT COALESCE(SUM("user_task"."grade"), 0)
-            FROM "user_task" AS "user_task"
-            INNER JOIN "task" AS "task" ON "task"."id" = "user_task"."task_id"
-            INNER JOIN "assignment" AS "assignment" ON "assignment"."id" = "task"."assignmentId"
-            WHERE
-              "user_task"."student_id" = "Student"."id"
-              AND "assignment"."courseId" = '${courseId}'
-              AND "assignment"."groupId" = '${groupId}'
-              AND "assignment"."semesterId" = '${semesterId}'
-          )`),
+          SELECT COALESCE(SUM("user_task"."grade"), 0)
+          FROM "user_task"
+          INNER JOIN "task" ON "task"."id" = "user_task"."task_id"
+          INNER JOIN "assignment" ON "assignment"."id" = "task"."assignmentId"
+          WHERE
+            "user_task"."student_id" = "Student"."id"
+            AND "assignment"."courseId" = '${courseId}'
+            AND "assignment"."groupId" = '${groupId}'
+            AND "assignment"."semesterId" = '${semesterId}'
+        )`),
             'totalScore',
           ],
-        ] },
+        ],
+      },
     });
-    return result;
+
+    return students;
   }
 
   //TODO можно попробовать переписать
@@ -238,7 +231,7 @@ export class CoursesService {
       attributes: [
         [Sequelize.fn('COUNT', Sequelize.col('tasks.id')), 'taskCount'],
         [
-          Sequelize.fn('SUM', Sequelize.col('tasks->userTask.grade')),
+          Sequelize.fn('SUM', Sequelize.col('tasks->solutions.grade')),
           'totalGrade',
         ],
       ],
@@ -261,7 +254,7 @@ export class CoursesService {
           include: [
             {
               model: UserTask,
-              as: 'userTask',
+              as: 'solutions',
               where: { student_id: student.id },
               attributes: [],
             },

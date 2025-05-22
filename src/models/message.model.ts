@@ -62,5 +62,12 @@ export class Message extends Model<Message> {
 
   @BelongsTo(() => Room)
     room: Room;
+
+  @BelongsTo(() => Message, 'parent_id')
+    parent: Message;
+
+  @HasMany(() => Message, 'parent_id')
+    children: Message[];
+
 }
 

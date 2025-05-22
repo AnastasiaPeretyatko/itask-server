@@ -92,4 +92,15 @@ export class SemestrsService {
       ],
     });
   }
+
+  async currentSemester () {
+    const today = new Date();
+
+    return await this.semestrsRepository.findOne({
+      where: {
+        startDate: { [Op.lte]: today },
+        endDate: { [Op.gte]: today },
+      },
+    });
+  }
 }

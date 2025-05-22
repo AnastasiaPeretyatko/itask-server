@@ -16,44 +16,103 @@ export class MessageService {
     private socketGateway: SocketGateway,
   ) {}
 
-  async create(author_id: string, dto: {room_id: string, content: string}) {
-    const room = await this.roomRepository.findOne({ where: { id: dto.room_id } });
+  async create(author_id: string, dto: {id?: string, content: string, task_id?: string, parent_id?: string}) {
+    const { content, parent_id = null, ...ids } = dto;
+    const room = await this.roomRepository.findOne({ where: { ...ids } });
 
-    if(!room) {
-      throw ApiException.badRequest('Комната не найдена');
+    let userIds = [];
+    if(!room.task_id){
+      userIds = await this.roomService.findUserInRoom(room.id, author_id, room.access);
     }
-    const userIds = await this.roomService.findUserInRoom(room.id, author_id, room.access);
-    const createMessage = await this.messageRepository.create({ author_id, ...dto, room_id: dto.room_id });
-    const message = await this.messageRepository.findOne({
-      where: { id: createMessage.id },
-      include: [
-        {
-          model: User,
-          as: 'author',
-          attributes: ['id', 'fullName', 'email', 'avatar', 'role'],
-        },
-      ],
-    });
+
+    console.log({ author_id, content, room_id: room.id, parent_id, dto });
+    const createMessage = await this.messageRepository.create({ author_id, content, room_id: room.id, parent_id });
+    const message = await this.findByPk(createMessage.id);
 
     this.socketGateway.notifyUsers(userIds, 'new-message', message);
     return message;
   }
 
-  async findAll(dto: {room_id: string}) {
-    const room = await this.roomRepository.findByPk(dto.room_id);
-    if (!room) {
+  async findAll(userId: string, dto: {room_id?: string, task_id?: string}) {
+    const [room, created] = await this.roomRepository.findOrCreate({
+      where: { ...dto },
+      defaults: {
+        owner_id: userId,
+      },
+    });
+
+    if (!room && !created) {
       throw ApiException.badRequest('Комната не найдена');
     }
+
     return await this.messageRepository.findAll({
-      where: { room_id: dto.room_id },
+      where: { room_id: room.id, parent_id: null },
       include: [
         {
           model: User,
           as: 'author',
           attributes: ['id', 'email', 'fullName', 'role'],
         },
+        {
+          model: Message,
+          as: 'children',
+          include: [
+            {
+              model: User,
+              as: 'author',
+              attributes: ['id', 'email', 'fullName', 'role'],
+            },
+          ],
+        },
+        {
+          model: Message,
+          as: 'parent',
+          include: [
+            {
+              model: User,
+              as: 'author',
+              attributes: ['id', 'email', 'fullName', 'role'],
+            },
+          ],
+        },
       ],
       order: [['createdAt', 'ASC']],
     });
   }
+
+  async findByPk (id: string) {
+    return await this.messageRepository.findOne({
+      where: { id },
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'email', 'fullName', 'role'],
+        },
+        {
+          model: Message,
+          as: 'children',
+          include: [
+            {
+              model: User,
+              as: 'author',
+              attributes: ['id', 'email', 'fullName', 'role'],
+            },
+          ],
+        },
+        {
+          model: Message,
+          as: 'parent',
+          include: [
+            {
+              model: User,
+              as: 'author',
+              attributes: ['id', 'email', 'fullName', 'role'],
+            },
+          ],
+        },
+      ],
+    });
+  }
 }
+

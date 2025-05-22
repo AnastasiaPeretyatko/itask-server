@@ -84,7 +84,7 @@ export class Task extends Model<Task> {
 
   @HasMany(() => UserTask, {
     foreignKey: 'task_id',
-    as: 'userTask',
+    as: 'solutions',
   })
-    userTask: UserTask[];
+    solutions: UserTask[];
 }

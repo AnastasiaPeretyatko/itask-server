@@ -49,9 +49,6 @@ export class Student extends Model<Student> {
   })
     user: User;
 
-  // @HasMany(() => Task)
-  //   tasks: Task[];
-
   @BelongsToMany(() => Task, () => UserTask)
     tasks: Task[];
 }

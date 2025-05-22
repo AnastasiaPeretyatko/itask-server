@@ -16,5 +16,6 @@ import { UserTask } from 'src/models/user_task.model';
     SequelizeModule.forFeature([Task, Professor, Student, Assignment, UserTask]),
     AuthModule,
   ],
+  exports: [TasksService],
 })
 export class TasksModule {}

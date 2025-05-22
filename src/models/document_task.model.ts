@@ -19,5 +19,5 @@ export class DocumentTask extends Model<DocumentTask> {
 
   @ForeignKey(() => Document)
   @Column({ type: DataType.UUID })
-    document_id: string;
+    documentId: string;
 }

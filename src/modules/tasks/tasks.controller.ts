@@ -13,9 +13,9 @@ export class TasksController {
   constructor(private taskService: TasksService) {}
 
   @Post()
-  @UsePipes(new ZodValidationPipe(CreateTaskSchema))
-  async create(@Body() dto: CreateTaskDto) {
-    return await this.taskService.create(dto);
+  @UseGuards(JwtAuthGuard)
+  async create(@Req () req, @Body(new ZodValidationPipe(CreateTaskSchema)) dto: CreateTaskDto) {
+    return await this.taskService.create(req.user.id, dto);
   }
 
   @Get()

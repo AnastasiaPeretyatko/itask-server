@@ -228,7 +228,7 @@ export class AssigmentService {
         {
           model: Semester,
           as: 'semester',
-          attributes: ['id', 'name'],
+          attributes: ['id', ['name', 'label']],
         },
       ],
     });

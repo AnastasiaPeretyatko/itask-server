@@ -57,7 +57,7 @@ export class RoomService {
     });
   }
 
-  async create(id: string, dto: { userIds?: string[], title: string, task_id?: string, access?: string }) {
+  async create(id: string, dto: { userIds?: string[], title?: string, task_id?: string, access?: string }) {
     const { title = null } = dto;
 
     if(!dto.userIds) {
@@ -215,6 +215,7 @@ export class RoomService {
   }
 
   async findUserInRoom(room_id, user_id, access?: string) {
+
     if(access){
       const room = await this.roomRepository.findByPk(room_id);
       const task = await this.taskRepository.findByPk(room.task_id);

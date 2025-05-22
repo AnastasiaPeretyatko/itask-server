@@ -38,6 +38,9 @@ export class UserTask extends Model<UserTask> {
   @Column({ type: DataType.JSONB, defaultValue: null })
     answer: string | null;
 
+  @Column({ type: DataType.STRING, defaultValue: null })
+    comment: string | null;
+
   @ForeignKey(() => Task)
   @Column({ type: DataType.UUID })
     task_id: string;

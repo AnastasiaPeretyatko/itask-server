@@ -12,16 +12,16 @@ export class MessageController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Req() req, @Body() dto: {room_id: string, content: string}) {
+  async create(@Req() req, @Body() dto: {id?: string, content: string, task_id?: string}) {
     const { id } = req.user;
     return this.messageService.create(id, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('all')
-  async findAll(@Body() dto: {room_id: string}) {
+  async findAll(@Req() req, @Body() dto: {room_id: string, task_id: string}) {
     // const { id } = req.user;
-    return this.messageService.findAll(dto);
+    return this.messageService.findAll(req.user.id, dto);
   }
 
 }

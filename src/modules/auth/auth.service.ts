@@ -25,9 +25,9 @@ export class AuthService {
     const student = await this.studentService.getId(user.id);
     return {
       user: {
-        ...user.dataValues,
         ...professor,
         ...student,
+        ...user.dataValues,
         fullName: professor.fullName || student.fullName,
       },
       token: await this.generateToken(user),

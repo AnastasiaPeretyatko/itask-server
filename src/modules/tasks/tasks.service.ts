@@ -36,9 +36,17 @@ export class TasksService {
         {
           model: Assignment,
           as: 'assignment',
+          include: [{
+            model: Course,
+            as: 'course',
+          }],
         },
       ],
     });
+
+    if (!userId){
+      return task;
+    }
     const student = await this.studentRepository.findOne({ where: { user_id: userId } });
     if(!student) {
       return task;
@@ -55,7 +63,7 @@ export class TasksService {
     return task;
   }
 
-  async create(dto: CreateTaskDto){
+  async create(userId: string, dto: CreateTaskDto){
     const { assignment, task } = dto;
     const course = await this.assignmentRepository.findOne({
       where: { ...assignment },
@@ -73,7 +81,7 @@ export class TasksService {
     await newTask.$set('students', students); //Создание записи для студентов в группе
 
     return {
-      data: await this.one(newTask.id),
+      data: await this.one(newTask.id, userId),
       message: 'Задача успешно создана',
     };
   }
@@ -145,7 +153,7 @@ export class TasksService {
             {
               model: Professor,
               as: 'creatorBy',
-              attributes: ['id', 'name'],
+              attributes: ['id', 'fullName'],
             },
           ],
           ...(month && { where: taskWhere }),
