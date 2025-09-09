@@ -1,11 +1,5 @@
-import {
-  BelongsTo,
-  BelongsToMany,
-  Column,
-  DataType,
-  ForeignKey, HasMany, Model,
-  Table,
-} from 'sequelize-typescript';
+import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, HasMany, Model, Table } from 'sequelize-typescript';
+
 import { Assignment } from './assignment.model';
 import { DiscussionThread } from './discussion_thread.model';
 import { Professor } from './professor.model';
@@ -21,70 +15,70 @@ export class Task extends Model<Task> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
+  id: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
-    title: string;
+  title: string;
 
   @Column({ type: DataType.JSONB, allowNull: true, defaultValue: null })
-    text: string | null;
+  text: string | null;
 
   @ForeignKey(() => Professor)
   @Column({ type: DataType.UUID, field: 'creatorId' })
-    creatorId: string;
+  creatorId: string;
 
   @ForeignKey(() => Assignment)
   @Column({ type: DataType.UUID })
-    assignmentId: string;
+  assignmentId: string;
 
   @Column({ type: DataType.INTEGER, defaultValue: null })
-    score: number | null;
+  score: number | null;
 
   @Column({ type: DataType.STRING, defaultValue: null })
-    priority: string | null;
+  priority: string | null;
 
   @Column({ type: DataType.DATE, defaultValue: null })
-    startDate: Date | string | null;
+  startDate: Date | string | null;
 
   @Column({ type: DataType.DATE, defaultValue: null })
-    endDate: Date | string | null;
+  endDate: Date | string | null;
 
   @Column({ type: DataType.JSONB, defaultValue: null })
-    tags: string | null;
+  tags: string | null;
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
-    isAnswered: boolean;
+  isAnswered: boolean;
 
   @Column({ type: DataType.DATE })
-    createdAt: Date;
+  createdAt: Date;
 
   @Column({ type: DataType.DATE })
-    updatedAt: Date;
+  updatedAt: Date;
 
   @BelongsTo(() => Professor, { foreignKey: 'creatorId', onDelete: 'CASCADE', as: 'creatorBy' })
-    creatorBy: Professor;
+  creatorBy: Professor;
 
   @BelongsTo(() => Assignment, { foreignKey: 'assignmentId', onDelete: 'CASCADE', as: 'assignment' })
-    assignment: Assignment;
+  assignment: Assignment;
 
   @BelongsToMany(() => Student, () => UserTask)
-    students: Student[];
+  students: Student[];
 
   @HasMany(() => DiscussionThread, {
     foreignKey: 'task_id',
     as: 'discussionThread',
   })
-    discussionThread: DiscussionThread[];
+  discussionThread: DiscussionThread[];
 
   @HasMany(() => Room, {
     foreignKey: 'task_id',
     as: 'room',
   })
-    room: Room[];
+  room: Room[];
 
   @HasMany(() => UserTask, {
     foreignKey: 'task_id',
-    as: 'userTask',
+    as: 'solutions',
   })
-    userTask: UserTask[];
+  solutions: UserTask[];
 }

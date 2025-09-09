@@ -1,21 +1,15 @@
-import {
-  Body,
-  Controller,
-  Get, Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  UsePipes,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { UsersService } from '../users/users.service';
-import { ProfessorDto, ProfessorSchema } from './dto/create-professor';
-import { UpdateProfessorDto, UpdateProfessorSchema } from './dto/update-professor';
-import { ProfessorsService } from './professors.service';
+
 import { ROLE } from 'src/common/enum/role';
 import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 import { PaginationDto, PaginationSchema } from 'src/common/validation/pagination';
+
+import { ProfessorDto, ProfessorSchema } from './dto/create-professor';
+import { UpdateProfessorDto, UpdateProfessorSchema } from './dto/update-professor';
+import { ProfessorsService } from './professors.service';
+
+import { UsersService } from '../users/users.service';
 
 @ApiTags('Преподаватели')
 @Controller('professors')
@@ -47,7 +41,7 @@ export class ProfessorsController {
   }
 
   @Get('/list')
-  async getProfessorsList(@Query() query: {search: string}) {
+  async getProfessorsList(@Query() query: { search: string }) {
     return await this.professorsService.list(query.search);
   }
 }

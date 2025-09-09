@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { Degree, EducationMode } from 'src/common/enum';
 
 export const GroupSchema = z.object({

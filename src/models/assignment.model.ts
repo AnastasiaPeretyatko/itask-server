@@ -1,10 +1,5 @@
-import {
-  BelongsTo, Column, DataType,
-  ForeignKey,
-  HasMany,
-  Model,
-  Table,
-} from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table } from 'sequelize-typescript';
+
 import { Course } from './courses.model';
 import { Group } from './group.model';
 import { Professor } from './professor.model';
@@ -19,37 +14,36 @@ export class Assignment extends Model<Assignment> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
-
-  @ForeignKey(() => Course)
-  @Column({ type: DataType.UUID })
-    courseId: string;
+  id: string;
 
   @ForeignKey(() => Professor)
-  @Column({ type: DataType.UUID, allowNull: true })
-    professorId: string | null;
+  @Column(DataType.UUID)
+  professorId: string;
+
+  @ForeignKey(() => Course)
+  @Column(DataType.UUID)
+  courseId: string;
 
   @ForeignKey(() => Group)
-  @Column({ type: DataType.UUID, allowNull: true })
-    groupId: string | null;
+  @Column(DataType.UUID)
+  groupId: string;
 
   @ForeignKey(() => Semester)
-  @Column({ type: DataType.UUID, allowNull: true })
-    semesterId: string | null;
+  @Column(DataType.UUID)
+  semesterId: string;
 
-  @BelongsTo(() => Course, { foreignKey: 'courseId', onDelete: 'CASCADE', as: 'course' })
-    course: Course;
+  @BelongsTo(() => Professor)
+  professor: Professor;
 
-  @BelongsTo(() => Professor, { foreignKey: 'professorId', onDelete: 'CASCADE', as: 'professor' })
-    professor: Professor;
+  @BelongsTo(() => Course)
+  course: Course;
 
-  @BelongsTo(() => Group, { foreignKey: 'groupId', onDelete: 'CASCADE', as: 'group' })
-    group: Group;
+  @BelongsTo(() => Group)
+  group: Group;
 
-  @BelongsTo(() => Semester, { foreignKey: 'semesterId', onDelete: 'CASCADE', as: 'semester' })
-    semester: Semester;
+  @BelongsTo(() => Semester)
+  semester: Semester;
 
   @HasMany(() => Task)
-    tasks: Task[];
+  tasks: Task[];
 }
-

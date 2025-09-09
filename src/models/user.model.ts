@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { BelongsToMany, Column, DataType, HasMany, HasOne, Model, Table } from 'sequelize-typescript';
+
 import { DiscussionThread } from './discussion_thread.model';
 import { Document } from './documents.model';
 import { Message } from './message.model';
@@ -17,73 +18,73 @@ export class User extends Model<User> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
+  id: string;
 
   @Column({ type: DataType.STRING, unique: true, allowNull: false })
-    email: string;
+  email: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
-    password: string;
+  password: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
-    role: string;
+  role: string;
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
-    isActivated: boolean;
+  isActivated: boolean;
 
   @Column({ type: DataType.STRING })
-    activationLink: string;
+  activationLink: string;
 
   @Column({ type: DataType.STRING })
-    avatar: string;
+  avatar: string;
 
   @Column({ type: DataType.STRING })
-    fullName: string;
+  fullName: string;
 
   @Column({ type: DataType.STRING })
-    tel: string;
+  tel: string;
 
   @HasOne(() => Professor, {
     foreignKey: 'user_id',
     as: 'professor',
   })
-    professor: Professor;
+  professor: Professor;
 
   @HasOne(() => Student, {
     foreignKey: 'user_id',
     as: 'student',
   })
-    student: Student;
+  student: Student;
 
   @HasOne(() => DiscussionThread, {
     foreignKey: 'created_by',
     as: 'discussionThread',
   })
-    discussionThread: DiscussionThread;
+  discussionThread: DiscussionThread;
 
   @HasOne(() => Message, {
     foreignKey: 'author_id',
     as: 'message',
   })
-    message: Message;
+  message: Message;
 
   @HasMany(() => Notification, {
     foreignKey: 'user_id',
     as: 'notifications',
   })
-    notifications: Notification[];
+  notifications: Notification[];
 
   @BelongsToMany(() => Room, () => UserRoom)
-    rooms: Room[];
+  rooms: Room[];
 
   @HasOne(() => Room, {
     foreignKey: 'owner_id',
     as: 'room',
   })
-    room: Room;
+  room: Room;
 
   @HasMany(() => Document)
-    document: Document;
+  document: Document;
 
   static async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 10);

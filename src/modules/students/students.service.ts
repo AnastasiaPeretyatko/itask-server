@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+
 import { Op, Sequelize } from 'sequelize';
-import { StudentDto } from './dto/create-student.dto';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { PaginationDto } from 'src/common/validation/pagination';
 import { Group } from 'src/models/group.model';
 import { Student } from 'src/models/student.model';
 import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
+
+import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { PaginationDto } from 'src/common/validation/pagination';
+
+import { StudentDto } from './dto/create-student.dto';
 
 @Injectable()
 export class StudentsService {
@@ -34,7 +37,9 @@ export class StudentsService {
       ],
     });
 
-    if (!student) {throw ApiException.notFound('Студент не найден');}
+    if (!student) {
+      throw ApiException.notFound('Студент не найден');
+    }
 
     const newStudent = {
       ...{ group_id: student.group_id, fullName: student.fullName, tel: student.tel },
@@ -60,18 +65,15 @@ export class StudentsService {
     const { limit = 10, page = 1, search } = query;
     const whereConditions = search
       ? {
-        [Op.or]: [
-          Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
-            [Op.like]: `%${search.toLowerCase()}%`,
-          }),
-          Sequelize.where(
-            Sequelize.fn('lower', Sequelize.col('user.email')),
-            {
+          [Op.or]: [
+            Sequelize.where(Sequelize.fn('lower', Sequelize.col('fullName')), {
               [Op.like]: `%${search.toLowerCase()}%`,
-            },
-          ),
-        ],
-      }
+            }),
+            Sequelize.where(Sequelize.fn('lower', Sequelize.col('user.email')), {
+              [Op.like]: `%${search.toLowerCase()}%`,
+            }),
+          ],
+        }
       : {};
 
     const { rows, count } = await this.studentRepository.findAndCountAll({
@@ -100,7 +102,7 @@ export class StudentsService {
       where: whereConditions,
     });
 
-    const data = rows.map((student) => {
+    const data = rows.map(student => {
       const studentObj = student.toJSON();
 
       const group = {
@@ -118,7 +120,9 @@ export class StudentsService {
   async update(id: string, dto: StudentDto) {
     const student = await this.studentRepository.findByPk(id);
 
-    if (!student) {throw ApiException.notFound('Студент не найден');}
+    if (!student) {
+      throw ApiException.notFound('Студент не найден');
+    }
 
     await student.update(dto);
     await student.save();
@@ -136,7 +140,7 @@ export class StudentsService {
     return { studentId: student?.id, ...student?.dataValues };
   }
 
-  async getAllStudentIdsInGroup (group_id: string) {
+  async getAllStudentIdsInGroup(group_id: string) {
     return await this.studentRepository.findAll({
       where: { group_id },
       attributes: ['id'],

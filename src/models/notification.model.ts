@@ -1,4 +1,5 @@
 import { BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table, UpdatedAt } from 'sequelize-typescript';
+
 import { Message } from './message.model';
 import { User } from './user.model';
 
@@ -10,31 +11,31 @@ export class Notification extends Model<Notification> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
+  id: string;
 
   @ForeignKey(() => Message)
   @Column({ type: DataType.UUID })
-    message_id: string;
+  message_id: string;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID })
-    user_id: string;
+  user_id: string;
 
   @Column({ type: DataType.STRING })
-    type: string;
+  type: string;
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
-    is_read: boolean;
+  is_read: boolean;
 
   @CreatedAt
-    createdAt: Date;
+  createdAt: Date;
 
   @UpdatedAt
-    updatedAt: Date;
+  updatedAt: Date;
 
   @BelongsTo(() => Message)
-    message: Message;
+  message: Message;
 
   @BelongsTo(() => User)
-    user: User;
+  user: User;
 }

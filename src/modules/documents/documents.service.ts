@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
+
 import { Document } from 'src/models/documents.model';
+import { User } from 'src/models/user.model';
+
+import { ApiException } from 'src/common/exceptions/api.exceptions';
 
 @Injectable()
 export class DocumentsService {
-  constructor(
-    @InjectModel(Document) private documentRepository: typeof Document,
-  ) { }
+  constructor(@InjectModel(Document) private documentRepository: typeof Document) {}
 
   async create(dto: Partial<Document>) {
     const document = await this.documentRepository.create(dto);
@@ -28,6 +29,7 @@ export class DocumentsService {
       include: [
         { model: Document, as: 'children' },
         { model: Document, as: 'parent' },
+        { model: User, as: 'creator' },
       ],
     });
     return document;
@@ -55,5 +57,4 @@ export class DocumentsService {
     await document.destroy();
     return { message: 'Документ успешно удален' };
   }
-
 }

@@ -1,27 +1,29 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+
+import { MessageCreateDto, MessageSchema } from './dto/message.create';
 import { MessageService } from './message.service';
+
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Сообщения')
 @Controller('message')
 export class MessageController {
-  constructor(
-    private messageService: MessageService,
-  ) {}
+  constructor(private messageService: MessageService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Req() req, @Body() dto: {room_id: string, content: string}) {
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ZodValidationPipe(MessageSchema))
+  async create(@Req() req, @Body() dto: MessageCreateDto) {
     const { id } = req.user;
     return this.messageService.create(id, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('all')
-  async findAll(@Body() dto: {room_id: string}) {
-    // const { id } = req.user;
-    return this.messageService.findAll(dto);
+  async findAll(@Req() req, @Body() dto: { room_id: string; task_id: string }) {
+    return this.messageService.findAll(req.user.id, dto);
   }
-
 }

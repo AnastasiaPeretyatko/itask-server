@@ -1,12 +1,14 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
 import { DocumentsService } from './documents.service';
+
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Документы')
 @Controller('doc')
 export class DocumentsController {
-  constructor(private documentsService: DocumentsService ) {}
+  constructor(private documentsService: DocumentsService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('/doc.create')

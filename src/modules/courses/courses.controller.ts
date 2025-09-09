@@ -1,27 +1,18 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UsePipes,
-  Query,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CoursesService } from './courses.service';
-import { CreateCourseDto, CreateCourseSchema } from './dto/create-course.dto';
+
 import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
-import { PaginationDto, PaginationSchema } from 'src/common/validation/pagination';
+import { PaginationDto } from 'src/common/validation/pagination';
+
+import { CreateCourseDto, CreateCourseSchema } from './dto/create-course.dto';
+import { CoursesService } from './courses.service';
+
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Курсы')
 @Controller('courses')
 export class CoursesController {
-  constructor(private coursesService: CoursesService) { }
+  constructor(private coursesService: CoursesService) {}
 
   @Post()
   @UsePipes(new ZodValidationPipe(CreateCourseSchema))
@@ -40,10 +31,14 @@ export class CoursesController {
     return await this.coursesService.delete(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
-  @UsePipes(new ZodValidationPipe(PaginationSchema))
-  async getAll(@Query() query: PaginationDto) {
-    return await this.coursesService.getAll(query);
+  // @UsePipes(new ZodValidationPipe(PaginationSchema))
+  async getAll(
+    @Req() req,
+    @Query() query: PaginationDto & { groupId?: string; semesterId?: string; courseId?: string },
+  ) {
+    return await this.coursesService.getAll(req.user.id, query);
   }
 
   @Get('info/:id')
@@ -51,31 +46,17 @@ export class CoursesController {
     return await this.coursesService.info(id);
   }
 
-  @Get('list.groups/:id')
-  async getGroups(@Param('id') id: string) {
-    return await this.coursesService.getGroups(id);
-  }
-
-  //TODO Выяснить нужен ли этот эндпоинт
-  @Post('assignment')
-  async assigningGroupToCourse(@Body() { id, courseId }: { id: string, courseId: string }) {
-    return await this.coursesService.assigningGroupToCourse(id, courseId);
-  }
-
-  // Получение курсов для студента
-  @UseGuards(JwtAuthGuard)
-  @Get('list')
-  async getAllCourseForSemester(@Req() req, @Query() query: {semesterId: string, groupId: string}) {
-    const { id } = req.user;
-    return await this.coursesService.getAllCourseForStudent(id, query);
-  }
-
   @UseGuards(JwtAuthGuard)
   @Post(':id/students')
-  async getStudentsAndTask(@Param('id') courseId: string, @Req() req, @Body() dto: {
-      semesterId: string,
-      groupId: string
-    }) {
+  async getStudentsAndTask(
+    @Param('id') courseId: string,
+    @Req() req,
+    @Body()
+    dto: {
+      semesterId: string;
+      groupId: string;
+    },
+  ) {
     return await this.coursesService.getStudentsAndTask(courseId, dto.semesterId, dto.groupId);
   }
 

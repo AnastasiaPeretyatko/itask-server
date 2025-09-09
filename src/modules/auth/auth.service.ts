@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/sequelize';
+
+import { User } from 'src/models/user.model';
+
+import { ApiException } from 'src/common/exceptions/api.exceptions';
+
+import { LoginDto } from './dto/login.dto';
+
 import { ProfessorsService } from '../professors/professors.service';
 import { StudentsService } from '../students/students.service';
 import { UsersService } from '../users/users.service';
-import { LoginDto } from './dto/login.dto';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { User } from 'src/models/user.model';
 
 @Injectable()
 export class AuthService {
@@ -25,9 +29,9 @@ export class AuthService {
     const student = await this.studentService.getId(user.id);
     return {
       user: {
-        ...user.dataValues,
         ...professor,
         ...student,
+        ...user.dataValues,
         fullName: professor.fullName || student.fullName,
       },
       token: await this.generateToken(user),
@@ -41,16 +45,16 @@ export class AuthService {
 
   private async validateUser(dto: LoginDto) {
     const { email, password } = dto;
-    const user = await this.userService.findByEmail(email);
-    if (!user) {throw ApiException.badRequest('Пользователь не найден');}
+    const user = await this.userService.find({ email });
+    if (!user) {
+      throw ApiException.badRequest('Пользователь не найден');
+    }
 
-    const passwordEquals = await this.userRepository.comparePassword(
-      password,
-      user,
-    );
+    const passwordEquals = await this.userRepository.comparePassword(password, user);
 
-    if (!passwordEquals)
-    {throw ApiException.unautorized(`Пользователь не найден`);}
+    if (!passwordEquals) {
+      throw ApiException.unautorized(`Пользователь не найден`);
+    }
 
     return user;
   }

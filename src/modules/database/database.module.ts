@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+
 import { Assignment } from 'src/models/assignment.model';
 import { Course } from 'src/models/courses.model';
 import { DiscussionThread } from 'src/models/discussion_thread.model';
@@ -51,6 +52,7 @@ import { UserTask } from 'src/models/user_task.model';
         ],
         autoLoadModels: true,
         synchronize: false,
+        logging: false, //Отключить логирование в Терминале
       }),
       inject: [ConfigService],
     }),

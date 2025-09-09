@@ -1,12 +1,5 @@
-import {
-  Column,
-  CreatedAt,
-  DataType,
-  DeletedAt,
-  ForeignKey, Model,
-  Table,
-  UpdatedAt,
-} from 'sequelize-typescript';
+import { Column, CreatedAt, DataType, DeletedAt, ForeignKey, Model, Table, UpdatedAt } from 'sequelize-typescript';
+
 import { Room } from './room.model';
 import { User } from './user.model';
 
@@ -18,22 +11,22 @@ export class UserRoom extends Model<UserRoom> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
+  id: string;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID })
-    user_id: string;
+  user_id: string;
 
   @ForeignKey(() => Room)
   @Column({ type: DataType.UUID })
-    room_id: string;
+  room_id: string;
 
   @CreatedAt
-    createdAt: Date;
+  createdAt: Date;
 
   @UpdatedAt
-    updatedAt: Date;
+  updatedAt: Date;
 
   @DeletedAt
-    deletedAt: Date;
+  deletedAt: Date;
 }

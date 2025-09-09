@@ -1,13 +1,9 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  ForeignKey,
-  HasMany,
-  Model,
-  Table,
-} from 'sequelize-typescript';
+import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, HasMany, Model, Table } from 'sequelize-typescript';
+
 import { Assignment } from './assignment.model';
+import { Course } from './courses.model';
+import { Group } from './group.model';
+import { Semester } from './semester.model';
 import { Task } from './tasks.model';
 import { User } from './user.model';
 
@@ -19,33 +15,39 @@ export class Professor extends Model<Professor> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
+  id: string;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID, field: 'user_id' })
-    user_id: string;
+  user_id: string;
 
   @Column({ type: DataType.STRING })
-    fullName: string;
+  fullName: string;
 
   @Column({ type: DataType.STRING })
-    tel: string;
+  tel: string;
 
   @Column({ type: DataType.STRING(256) })
-    description: string;
+  description: string;
 
   @BelongsTo(() => User, {
     foreignKey: 'user_id',
     onDelete: 'CASCADE',
     as: 'user',
   })
-    user: User;
+  user: User;
 
   @HasMany(() => Task)
-    tasks: Task[];
+  tasks: Task[];
 
   // new changes
 
-  @HasMany(() => Assignment)
-    assignments: Assignment[];
+  @BelongsToMany(() => Course, () => Assignment)
+  courses: Course[];
+
+  @BelongsToMany(() => Group, () => Assignment)
+  groups: Group[];
+
+  @BelongsToMany(() => Semester, () => Assignment)
+  semesters: Semester[];
 }

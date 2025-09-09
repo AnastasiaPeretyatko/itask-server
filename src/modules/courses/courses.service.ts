@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+
 import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { CreateCourseDto } from './dto/create-course.dto';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { PaginationDto } from 'src/common/validation/pagination';
 import { Assignment } from 'src/models/assignment.model';
 import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
@@ -12,37 +10,41 @@ import { Professor } from 'src/models/professor.model';
 import { Semester } from 'src/models/semester.model';
 import { Student } from 'src/models/student.model';
 import { Task } from 'src/models/tasks.model';
-import { University } from 'src/models/university.model';
 import { User } from 'src/models/user.model';
 import { UserTask } from 'src/models/user_task.model';
+
+import { ROLE } from 'src/common/enum/role';
+import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { PaginationDto } from 'src/common/validation/pagination';
+
+import { CreateCourseDto } from './dto/create-course.dto';
 
 @Injectable()
 export class CoursesService {
   constructor(
     @InjectModel(Course) private courseRepository: typeof Course,
     @InjectModel(Professor) private professorRepository: typeof Professor,
-    @InjectModel(Assignment) private assigmentRepository: typeof Assignment,
+    @InjectModel(Assignment) private assignmentRepository: typeof Assignment,
     @InjectModel(Student) private studentRepository: typeof Student,
+    @InjectModel(User) private userRepository: typeof User,
+
     @InjectModel(UserTask) private userTaskRepository: typeof UserTask,
   ) {}
 
-  async find(id: string) {
+  //? Исправлено
+  async findByPk(id: string) {
     return await this.courseRepository.findOne({
       where: { id },
       include: [
         {
-          model: Assignment,
-          as: 'assignments',
+          model: Professor,
+          as: 'professors',
+          through: { as: 'assignment', attributes: [] },
           include: [
             {
-              model: Professor,
-              as: 'professor',
-              include: [
-                {
-                  model: User,
-                  as: 'user',
-                },
-              ],
+              model: User,
+              as: 'user',
+              attributes: ['fullName', 'avatar', 'email'],
             },
           ],
         },
@@ -50,10 +52,12 @@ export class CoursesService {
     });
   }
 
+  //? Done
   async getOne(id: string) {
-    return await this.find(id);
+    return await this.findByPk(id);
   }
 
+  //? Done
   async create(dto: CreateCourseDto) {
     const { name, description, professorIds } = dto;
 
@@ -64,78 +68,104 @@ export class CoursesService {
         where: { id: { [Op.in]: professorIds } },
       });
 
-      if (!teachers || teachers.length !== professorIds.length)
-      {throw ApiException.badRequest('Преподаватели не найдены');}
+      if (!teachers || teachers.length !== professorIds.length) {
+        throw ApiException.badRequest('Преподаватели не найдены');
+      }
 
-      const assignments = teachers.map((teacher) => ({
+      const assignments = teachers.map(teacher => ({
         professor_id: teacher.id,
         course_id: course.id,
         group_id: null,
         semester_id: null,
       }));
 
-      await this.assigmentRepository.bulkCreate(assignments);
+      await this.assignmentRepository.bulkCreate(assignments);
     }
 
     return {
-      data: await this.find(course.id),
+      data: await this.findByPk(course.id),
       message: 'Курс успешно создан',
     };
   }
 
   async update(id: string, dto: CreateCourseDto) {
-    const course = await this.find(id);
+    const course = await this.findByPk(id);
 
-    if (!course) {throw ApiException.notFound('Курс не найден');}
+    if (!course) {
+      throw ApiException.notFound('Курс не найден');
+    }
 
     await course.update(dto);
     await course.save();
 
     return {
-      data: await this.find(id),
+      data: await this.findByPk(id),
       message: 'Курс успешно обновлен',
     };
   }
 
   async delete(id: string) {
-    const course = await this.find(id);
+    const course = await this.findByPk(id);
 
-    if (!course) {throw ApiException.notFound('Курс не найден');}
+    if (!course) {
+      throw ApiException.notFound('Курс не найден');
+    }
 
-    const assignments = await this.assigmentRepository.findAll({
-      where: { courseId: id },
-    });
-
+    //TODO нужно проверить кейс, если у assignment есть задачи не вызовет ли это ошибки
+    await this.assignmentRepository.destroy({ where: { courseId: id } });
     await course.destroy();
-    assignments.map(async (assignment) => await assignment.destroy());
 
     return { message: 'Курс успешно удален' };
   }
 
-  async getAll(query: PaginationDto) {
-    const { limit = 10, page = 1, search } = query;
+  //TODO создать таску на тему того что теперь можно передавать params
+  async getAll(
+    id: string,
+    query: PaginationDto & { groupId?: string; semesterId?: string; courseId?: string; professorId?: string },
+  ) {
+    const user = await this.userRepository.findByPk(id);
+    let whereGroup = {};
+    let whereUser = {};
+    if (user.role === ROLE.STUDENT) {
+      const student = await this.studentRepository.findOne({
+        where: { user_id: user.id },
+      });
+      whereGroup = { id: student?.group_id };
+    } else if (user.role === ROLE.PROFESSOR) {
+      whereUser = { id: user.id };
+    }
+
+    const { limit = 10, page = 1, search = '', ...params } = query;
     const { count, rows: data } = await this.courseRepository.findAndCountAll({
       where: {
         name: { [Op.like]: `%${search}%` },
       },
       include: [
         {
-          model: Assignment,
-          as: 'assignments',
+          model: Professor,
+          as: 'professors',
+          required: Object.keys(whereUser).length !== 0,
+          through: { as: 'assignment', attributes: [] },
           include: [
             {
-              model: Professor,
-              as: 'professor',
-              include: [
-                {
-                  model: User,
-                  as: 'user',
-                },
-              ],
+              model: User,
+              as: 'user',
+              required: Object.keys(whereUser).length !== 0,
+              where: whereUser,
+              attributes: ['fullName', 'avatar', 'email'],
             },
           ],
         },
+        {
+          model: Group,
+          as: 'groups',
+          required: Object.keys(whereGroup).length !== 0,
+          through: { as: 'assignment', attributes: [], where: { ...params } },
+          where: whereGroup,
+        },
       ],
+      distinct: true,
+      subQuery: false,
       limit,
       offset: limit * (page - 1),
     });
@@ -147,180 +177,69 @@ export class CoursesService {
     return await this.courseRepository.findByPk(id);
   }
 
-  async getGroups(id: string) {
-    const groups = await this.assigmentRepository.findAll({
-      where: { courseId: id },
-      attributes: ['id'],
+  async getStudentsAndTask(courseId: string, semesterId: string, groupId: string) {
+    const students = await this.studentRepository.findAll({
       include: [
-        {
-          model: Professor,
-          as: 'professor',
-          include: [
-            {
-              model: User,
-              as: 'user',
-            },
-          ],
-        },
         {
           model: Group,
-          as: 'groups',
+          as: 'group',
+          where: { id: groupId },
           include: [
             {
-              model: University,
-              as: 'university',
+              model: Semester,
+              // as: 'semester',
+              where: { id: semesterId },
+              through: { attributes: [] },
+            },
+            {
+              model: Course,
+              // as: 'course',
+              where: { id: courseId },
+              through: { attributes: [] },
             },
           ],
         },
-        {
-          model: Semester,
-          as: 'semester',
-        },
-      ],
-    });
-
-    const groupsId = [...new Set(groups.map((g) => g.group ? g.group.id : null)) as unknown as string[]].filter((el) => el !== null);
-
-    if (!groupsId.length) {return;}
-
-    const groupsData = groupsId.map((gId, indx) => {
-      const acc = [];
-      groups.forEach((data) => {
-        const { professor, semester, group, id } = data;
-        if (data.group && data.group.id === gId) {
-
-          // Инициализация acc[indx], если он еще не существует
-          if (!acc[indx]) {
-            acc[indx] = {
-              id,
-              group,
-              professors: [],
-              semesters: [],
-            };
-          }
-
-          // Добавление professors, если они не равны null
-          if (professor) {
-            acc[indx].professors.push(...(Array.isArray(professor) ? professor : [professor]));
-          }
-
-          // Добавление semesters, если они не равны null
-          if (semester) {
-            acc[indx].semesters.push(...(Array.isArray(semester) ? semester : [semester]));
-          }
-        }
-      });
-      return acc[indx] || { groups: null, professors: [], semesters: [] }; // Возвращаем acc[indx] или объект по умолчанию
-    });
-
-    return groupsData;
-  }
-
-  async assigningGroupToCourse(group_id: string, course_id: string) {
-    const assignment = await this.assigmentRepository.create({
-      groupId: group_id,
-      courseId: course_id,
-    });
-
-    return assignment;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getStudentsAndTask(courseId: string, semesterId: string, groupId: string) {
-    const result = await this.studentRepository.findAll({
-      include: [
         {
           model: Task,
           as: 'tasks',
-          through: { as: 'user_task' },
-          include: [
-            {
-              model: Assignment,
-              as: 'assignment',
-              attributes: [],
-              include: [
-                {
-                  model: Course,
-                  as: 'course',
-                  where: { id: courseId },
-                  attributes: [],
-                },
-                {
-                  model: Group,
-                  as: 'group',
-                  where: { id: groupId },
-                  attributes: [],
-                },
-                {
-                  model: Semester,
-                  as: 'semester',
-                  where: { id: semesterId },
-                  attributes: [],
-                },
-              ],
-            },
-          ],
-
+          through: { as: 'solutions' }, // user_task, связь many-to-many
         },
-
       ],
       attributes: {
         include: [
           [
             Sequelize.literal(`(
-            SELECT COALESCE(SUM("user_task"."grade"), 0)
-            FROM "user_task" AS "user_task"
-            INNER JOIN "task" AS "task" ON "task"."id" = "user_task"."task_id"
-            INNER JOIN "assignment" AS "assignment" ON "assignment"."id" = "task"."assignmentId"
-            WHERE
-              "user_task"."student_id" = "Student"."id"
-              AND "assignment"."courseId" = '${courseId}'
-              AND "assignment"."groupId" = '${groupId}'
-              AND "assignment"."semesterId" = '${semesterId}'
-          )`),
+          SELECT COALESCE(SUM("user_task"."grade"), 0)
+          FROM "user_task"
+          INNER JOIN "task" ON "task"."id" = "user_task"."task_id"
+          INNER JOIN "assignment" ON "assignment"."id" = "task"."assignmentId"
+          WHERE
+            "user_task"."student_id" = "Student"."id"
+            AND "assignment"."courseId" = '${courseId}'
+            AND "assignment"."groupId" = '${groupId}'
+            AND "assignment"."semesterId" = '${semesterId}'
+        )`),
             'totalScore',
           ],
-        ] },
-    });
-    return result;
-  }
-
-  async getAllCourseForStudent(userId: string,query: { semesterId: string, groupId: string }) {
-    const group = await this.studentRepository.findOne({ where: { user_id: userId } });
-
-    if (!group) {throw ApiException.notFound('Студент не найден');}
-
-    const assignments = await this.assigmentRepository.findAll({
-      attributes: ['courseId'],
-      where: { ...query, groupId: group.group_id },
-      include: [
-        {
-          model: Course,
-          as: 'course',
-        },
-      ],
+        ],
+      },
     });
 
-    // Извлекаем курсы и убираем дубликаты
-    const uniqueCourses = Array.from(
-      new Map(assignments.map((item) => [item.course.id, item.course])).values(),
-    );
-
-    return uniqueCourses;
+    return students;
   }
 
+  //TODO можно попробовать переписать
   async findAllCourseAndCountTask(id: string) {
     const student = await this.studentRepository.findOne({ where: { user_id: id } });
 
-    if (!student) {throw ApiException.notFound('Студент не найден');}
+    if (!student) {
+      throw ApiException.notFound('Студент не найден');
+    }
 
-    const userTasks = await this.assigmentRepository.findAll({
+    const userTasks = await this.assignmentRepository.findAll({
       attributes: [
         [Sequelize.fn('COUNT', Sequelize.col('tasks.id')), 'taskCount'],
-        [
-          Sequelize.fn('SUM', Sequelize.col('tasks->userTask.grade')),
-          'totalGrade',
-        ],
+        [Sequelize.fn('SUM', Sequelize.col('tasks->solutions.grade')), 'totalGrade'],
       ],
       include: [
         {
@@ -341,7 +260,7 @@ export class CoursesService {
           include: [
             {
               model: UserTask,
-              as: 'userTask',
+              as: 'solutions',
               where: { student_id: student.id },
               attributes: [],
             },

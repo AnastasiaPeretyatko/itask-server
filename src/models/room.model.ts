@@ -3,10 +3,15 @@ import {
   BelongsToMany,
   Column,
   CreatedAt,
-  DataType, DeletedAt, ForeignKey, HasMany, Model,
+  DataType,
+  DeletedAt,
+  ForeignKey,
+  HasMany,
+  Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+
 import { Message } from './message.model';
 import { Task } from './tasks.model';
 import { User } from './user.model';
@@ -20,43 +25,43 @@ export class Room extends Model<Room> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
+  id: string;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID })
-    owner_id: string;
+  owner_id: string;
 
   @Column({ type: DataType.STRING, defaultValue: null })
-    title: string | null;
+  title: string | null;
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
-    is_private: boolean;
+  is_private: boolean;
 
   @ForeignKey(() => Task)
   @Column({ type: DataType.UUID, defaultValue: null })
-    task_id: string | null;
+  task_id: string | null;
 
   @Column({ type: DataType.ENUM('students', 'professors', 'all'), defaultValue: null })
-    access: string | null;
+  access: string | null;
 
   @CreatedAt
-    createdAt: Date;
+  createdAt: Date;
 
   @UpdatedAt
-    updatedAt: Date;
+  updatedAt: Date;
 
   @DeletedAt
-    deletedAt: Date;
+  deletedAt: Date;
 
   @BelongsToMany(() => User, () => UserRoom)
-    users: User[];
+  users: User[];
 
   @BelongsToMany(() => User, () => UserRoom)
-    filteredUsers: User[];
+  filteredUsers: User[];
 
   @HasMany(() => Message)
-    messages: Message[];
+  messages: Message[];
 
   @BelongsTo(() => Task)
-    task: Task;
+  task: Task;
 }

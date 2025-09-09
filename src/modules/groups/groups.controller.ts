@@ -1,19 +1,12 @@
-import {
-  Body,
-  Controller,
-  Get, Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  UsePipes,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+import { PaginationDto, PaginationSchema } from 'src/common/validation/pagination';
+
 import { GroupDto, GroupSchema } from './dto/create-group.dto';
 import { UpdateGroupDto, UpdateGroupSchema } from './dto/update-group.dto';
 import { GroupsService } from './groups.service';
-import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
-import { PaginationDto, PaginationSchema } from 'src/common/validation/pagination';
 
 @ApiTags('Группы')
 @Controller('groups')
@@ -57,10 +50,5 @@ export class GroupsController {
   @Get('/:id/students')
   async getStudentsByGroup(@Param('id') id: string) {
     return await this.groupsService.getStudentsByGroup(id);
-  }
-
-  @Get('/:id/courses')
-  async getCoursesByGroup(@Param('id') id: string) {
-    return await this.groupsService.getCoursesByGroup(id);
   }
 }

@@ -1,7 +1,7 @@
 import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+
 import { Document } from './documents.model';
 import { UserTask } from './user_task.model';
-
 
 @Table({ tableName: 'document_task' })
 export class DocumentTask extends Model<DocumentTask> {
@@ -11,13 +11,13 @@ export class DocumentTask extends Model<DocumentTask> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
+  id: string;
 
   @ForeignKey(() => UserTask)
   @Column({ type: DataType.UUID })
-    userTaskId: string;
+  userTaskId: string;
 
   @ForeignKey(() => Document)
   @Column({ type: DataType.UUID })
-    document_id: string;
+  documentId: string;
 }
