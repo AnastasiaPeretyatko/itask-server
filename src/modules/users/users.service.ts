@@ -3,8 +3,9 @@ import { InjectModel } from '@nestjs/sequelize';
 
 import { User } from 'src/models/user.model';
 
-import { ROLE } from 'src/common/enum/role';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
+
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +17,8 @@ export class UsersService {
     });
   }
 
-  async create(email: string, role: ROLE) {
+  async create(dto: CreateUserDto) {
+    const { email, role } = dto;
     const candidate = await this.find({ email });
 
     if (candidate) {

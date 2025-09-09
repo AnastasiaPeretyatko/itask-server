@@ -22,7 +22,10 @@ export class ProfessorsController {
   @Post()
   @UsePipes(new ZodValidationPipe(ProfessorSchema))
   async create(@Body() dto: ProfessorDto) {
-    const user = await this.usersService.create(dto.email, ROLE.PROFESSOR);
+    const user = await this.usersService.create({
+      email: dto.email,
+      role: ROLE.PROFESSOR,
+    });
     return await this.professorsService.create(user.id, dto.fullName);
   }
 

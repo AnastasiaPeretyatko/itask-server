@@ -57,7 +57,7 @@ describe('UsersService', () => {
       dataValues: { id: 'uuid-123', email: dto.email, role: dto.role },
     });
 
-    const result = await service.create(dto.email, dto.role);
+    const result = await service.create(dto);
 
     expect(result).toEqual({
       id: 'uuid-123',
@@ -78,7 +78,7 @@ describe('UsersService', () => {
     const dto = { email: 'user@user.com', role: ROLE.STUDENT };
     mockUserRepository.findOne.mockResolvedValue({ id: 'uuid-123', ...dto });
 
-    await expect(service.create(dto.email, dto.role)).rejects.toThrowError(
+    await expect(service.create(dto)).rejects.toThrowError(
       `Пользователь с почтовым адресом ${dto.email} уже существует`,
     );
   });

@@ -3,6 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { User } from 'src/models/user.model';
 
+import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -13,10 +14,11 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @ApiOperation({ summary: 'Создание пользователя' })
-  @ApiResponse({ status: 200, type: User })
+  @ApiResponse({ status: 201, type: User })
+  @ApiResponse({ status: 400, description: 'Пользователь с почтовым адресом user@user.ru уже существует' })
   @Post()
-  create(@Body() dto: { email: string; role: string }) {
-    return this.usersService.create(dto.email, dto.role);
+  create(@Body() dto: CreateUserDto) {
+    return this.usersService.create(dto);
   }
 
   @ApiOperation({ summary: 'Получение одного пользователя' })
