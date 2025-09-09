@@ -1,16 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+
 import { Op } from 'sequelize';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { GetAllTaskDto } from './dto/getAll.dto';
-import { TaskStatus } from 'src/common/enum/task';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { Assignment } from 'src/models/assignment.model';
 import { Course } from 'src/models/courses.model';
 import { Professor } from 'src/models/professor.model';
 import { Student } from 'src/models/student.model';
 import { Task } from 'src/models/tasks.model';
 import { UserTask } from 'src/models/user_task.model';
+
+import { TaskStatus } from 'src/common/enum/task';
+import { ApiException } from 'src/common/exceptions/api.exceptions';
+
+import { CreateTaskDto } from './dto/create-task.dto';
+import { GetAllTaskDto } from './dto/getAll.dto';
 
 @Injectable()
 export class TasksService {
@@ -36,19 +39,21 @@ export class TasksService {
         {
           model: Assignment,
           as: 'assignment',
-          include: [{
-            model: Course,
-            as: 'course',
-          }],
+          include: [
+            {
+              model: Course,
+              as: 'course',
+            },
+          ],
         },
       ],
     });
 
-    if (!userId){
+    if (!userId) {
       return task;
     }
     const student = await this.studentRepository.findOne({ where: { user_id: userId } });
-    if(!student) {
+    if (!student) {
       return task;
     }
 
@@ -56,20 +61,20 @@ export class TasksService {
       where: { task_id: id, student_id: student.id },
     });
 
-    if(!isAnswer) {
+    if (!isAnswer) {
       task.dataValues.isAnswered = false;
     }
 
     return task;
   }
 
-  async create(userId: string, dto: CreateTaskDto){
+  async create(userId: string, dto: CreateTaskDto) {
     const { assignment, task } = dto;
     const course = await this.assignmentRepository.findOne({
       where: { ...assignment },
     });
 
-    if(!course && !assignment.groupId) {
+    if (!course && !assignment.groupId) {
       throw ApiException.badRequest('Запись не найдена');
     }
     const students = await this.studentRepository.findAll({
@@ -92,7 +97,7 @@ export class TasksService {
       where: { id: task.id },
     });
 
-    if(!updateTask) {
+    if (!updateTask) {
       throw ApiException.badRequest('Запись не найдена');
     }
 
@@ -105,7 +110,7 @@ export class TasksService {
     };
   }
 
-  async all(query: GetAllTaskDto){
+  async all(query: GetAllTaskDto) {
     const tasks = await this.taskRepository.findAll({
       include: {
         model: Assignment,
@@ -144,11 +149,13 @@ export class TasksService {
               model: Assignment,
               as: 'assignment',
               attributes: ['courseId', 'groupId', 'semesterId'],
-              include: [{
-                model: Course,
-                as: 'course',
-                attributes: ['name'],
-              }],
+              include: [
+                {
+                  model: Course,
+                  as: 'course',
+                  attributes: ['name'],
+                },
+              ],
             },
             {
               model: Professor,
@@ -162,15 +169,16 @@ export class TasksService {
       ],
     });
 
-    const tasks = student?.tasks.map((task) => {
-      // Создаем новый объект с нужными свойствами
-      const { assignment } = task.toJSON();
+    const tasks =
+      student?.tasks.map(task => {
+        // Создаем новый объект с нужными свойствами
+        const { assignment } = task.toJSON();
 
-      return {
-        ...task.toJSON(),
-        courseName: assignment?.course?.name, // Добавляем courseName перед возвратом
-      };
-    }) || [];
+        return {
+          ...task.toJSON(),
+          courseName: assignment?.course?.name, // Добавляем courseName перед возвратом
+        };
+      }) || [];
     return tasks;
   }
 
@@ -179,7 +187,7 @@ export class TasksService {
       where: { id },
     });
 
-    if(!task) {
+    if (!task) {
       throw ApiException.badRequest('Запись не найдена');
     }
 
@@ -200,5 +208,4 @@ export class TasksService {
       message: 'Задача успешно обновлена',
     };
   }
-
 }

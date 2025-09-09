@@ -1,18 +1,21 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
 import { RoomService } from './room.service';
+
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Комната')
 @Controller('room')
 export class RoomController {
-  constructor(
-    private roomService: RoomService,
-  ) {}
+  constructor(private roomService: RoomService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Req() req, @Body() dto: { userIds: string[] | null, title: string, task_id?: string, access?: string }) {
+  async create(
+    @Req() req,
+    @Body() dto: { userIds: string[] | null; title: string; task_id?: string; access?: string },
+  ) {
     const { id } = req.user;
     return await this.roomService.create(id, dto);
   }
@@ -33,14 +36,14 @@ export class RoomController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/delete.user-room')
-  async deleteUserFromRoom(@Req() req, @Body() dto: {roomId: string, userId: string}) {
+  async deleteUserFromRoom(@Req() req, @Body() dto: { roomId: string; userId: string }) {
     const { id } = req.user;
     return this.roomService.deleteUserFromRoom(id, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('/delete')
-  async deleteRoom(@Req() req, @Body() dto: {roomId: string}) {
+  async deleteRoom(@Req() req, @Body() dto: { roomId: string }) {
     const { id } = req.user;
     return this.roomService.deleteRoom(id, dto);
   }

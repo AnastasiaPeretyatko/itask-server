@@ -1,12 +1,5 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  ForeignKey,
-  HasMany,
-  Model,
-  Table,
-} from 'sequelize-typescript';
+import { BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table } from 'sequelize-typescript';
+
 import { Course } from './courses.model';
 import { Group } from './group.model';
 import { Professor } from './professor.model';
@@ -21,37 +14,36 @@ export class Assignment extends Model<Assignment> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
+  id: string;
 
   @ForeignKey(() => Professor)
   @Column(DataType.UUID)
-    professorId: string;
+  professorId: string;
 
   @ForeignKey(() => Course)
   @Column(DataType.UUID)
-    courseId: string;
+  courseId: string;
 
   @ForeignKey(() => Group)
   @Column(DataType.UUID)
-    groupId: string;
+  groupId: string;
 
   @ForeignKey(() => Semester)
   @Column(DataType.UUID)
-    semesterId: string;
+  semesterId: string;
 
   @BelongsTo(() => Professor)
-    professor: Professor;
+  professor: Professor;
 
   @BelongsTo(() => Course)
-    course: Course;
+  course: Course;
 
   @BelongsTo(() => Group)
-    group: Group;
+  group: Group;
 
   @BelongsTo(() => Semester)
-    semester: Semester;
+  semester: Semester;
 
   @HasMany(() => Task)
-    tasks: Task[];
+  tasks: Task[];
 }
-

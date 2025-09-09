@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+
 import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { CreateCourseDto } from './dto/create-course.dto';
-import { ROLE } from 'src/common/enum/role';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
-import { PaginationDto } from 'src/common/validation/pagination';
 import { Assignment } from 'src/models/assignment.model';
 import { Course } from 'src/models/courses.model';
 import { Group } from 'src/models/group.model';
@@ -15,6 +12,12 @@ import { Student } from 'src/models/student.model';
 import { Task } from 'src/models/tasks.model';
 import { User } from 'src/models/user.model';
 import { UserTask } from 'src/models/user_task.model';
+
+import { ROLE } from 'src/common/enum/role';
+import { ApiException } from 'src/common/exceptions/api.exceptions';
+import { PaginationDto } from 'src/common/validation/pagination';
+
+import { CreateCourseDto } from './dto/create-course.dto';
 
 @Injectable()
 export class CoursesService {
@@ -65,10 +68,11 @@ export class CoursesService {
         where: { id: { [Op.in]: professorIds } },
       });
 
-      if (!teachers || teachers.length !== professorIds.length)
-      {throw ApiException.badRequest('Преподаватели не найдены');}
+      if (!teachers || teachers.length !== professorIds.length) {
+        throw ApiException.badRequest('Преподаватели не найдены');
+      }
 
-      const assignments = teachers.map((teacher) => ({
+      const assignments = teachers.map(teacher => ({
         professor_id: teacher.id,
         course_id: course.id,
         group_id: null,
@@ -115,7 +119,10 @@ export class CoursesService {
   }
 
   //TODO создать таску на тему того что теперь можно передавать params
-  async getAll(id: string, query: PaginationDto & { groupId?: string, semesterId?: string, courseId?: string, professorId?: string }) {
+  async getAll(
+    id: string,
+    query: PaginationDto & { groupId?: string; semesterId?: string; courseId?: string; professorId?: string },
+  ) {
     const user = await this.userRepository.findByPk(id);
     let whereGroup = {};
     let whereUser = {};
@@ -225,15 +232,14 @@ export class CoursesService {
   async findAllCourseAndCountTask(id: string) {
     const student = await this.studentRepository.findOne({ where: { user_id: id } });
 
-    if (!student) {throw ApiException.notFound('Студент не найден');}
+    if (!student) {
+      throw ApiException.notFound('Студент не найден');
+    }
 
     const userTasks = await this.assignmentRepository.findAll({
       attributes: [
         [Sequelize.fn('COUNT', Sequelize.col('tasks.id')), 'taskCount'],
-        [
-          Sequelize.fn('SUM', Sequelize.col('tasks->solutions.grade')),
-          'totalGrade',
-        ],
+        [Sequelize.fn('SUM', Sequelize.col('tasks->solutions.grade')), 'totalGrade'],
       ],
       include: [
         {

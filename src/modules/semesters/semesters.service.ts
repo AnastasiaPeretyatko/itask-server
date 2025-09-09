@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+
 import { Op } from 'sequelize';
-import { StudentsService } from '../students/students.service';
-import { SemesterDto } from './dto/create-semester.dto';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { Assignment } from 'src/models/assignment.model';
 import { Group } from 'src/models/group.model';
 import { Semester } from 'src/models/semester.model';
+
+import { ApiException } from 'src/common/exceptions/api.exceptions';
+
+import { SemesterDto } from './dto/create-semester.dto';
+
+import { StudentsService } from '../students/students.service';
 
 @Injectable()
 export class SemestrsService {
@@ -19,7 +23,9 @@ export class SemestrsService {
 
   async getOne(id: string) {
     const semester = await this.semestrsRepository.findByPk(id);
-    if (!semester) {throw ApiException.notFound('Семестр не найден');}
+    if (!semester) {
+      throw ApiException.notFound('Семестр не найден');
+    }
     return semester;
   }
 
@@ -35,7 +41,9 @@ export class SemestrsService {
   async update(id: string, dto: SemesterDto) {
     const semester = await this.getOne(id);
 
-    if (!semester) {throw ApiException.notFound('Семестр не найден');}
+    if (!semester) {
+      throw ApiException.notFound('Семестр не найден');
+    }
 
     await semester.update(dto);
     await semester.save();
@@ -56,8 +64,7 @@ export class SemestrsService {
   }
 
   async getAll() {
-    const { count, rows: semesters } =
-      await this.semestrsRepository.findAndCountAll();
+    const { count, rows: semesters } = await this.semestrsRepository.findAndCountAll();
 
     if (!semesters || !semesters.length) {
       throw ApiException.notFound('Семестры не найдены');
@@ -68,7 +75,7 @@ export class SemestrsService {
 
   async list(search: string) {
     const data = await this.semestrsRepository.findAll({
-      where: { name: { [Op.like]:  `%${search.toLowerCase()}%` } },
+      where: { name: { [Op.like]: `%${search.toLowerCase()}%` } },
     });
 
     return data;
@@ -77,7 +84,9 @@ export class SemestrsService {
   async getAllByStudent(id: string) {
     const student = await this.studentService.getOne(id);
 
-    if (!student) {throw ApiException.notFound('Студент не найден');}
+    if (!student) {
+      throw ApiException.notFound('Студент не найден');
+    }
 
     return await this.semestrsRepository.findAll({
       attributes: [['name', 'label'], 'id'],
@@ -93,7 +102,7 @@ export class SemestrsService {
     });
   }
 
-  async currentSemester () {
+  async currentSemester() {
     const today = new Date();
 
     return await this.semestrsRepository.findOne({

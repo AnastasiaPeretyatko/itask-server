@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+
 import { Op } from 'sequelize';
-import { UpdateProfessorDto } from './dto/update-professor';
+import { Professor } from 'src/models/professor.model';
+import { User } from 'src/models/user.model';
+
 import { ROLE } from 'src/common/enum/role';
 import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { PaginationDto } from 'src/common/validation/pagination';
-import { Professor } from 'src/models/professor.model';
-import { User } from 'src/models/user.model';
+
+import { UpdateProfessorDto } from './dto/update-professor';
 
 @Injectable()
 export class ProfessorsService {
@@ -43,7 +46,9 @@ export class ProfessorsService {
   async update(id: string, dto: UpdateProfessorDto) {
     const user = await this.professorRepository.findByPk(id);
 
-    if (!user) {throw ApiException.notFound('Преподаватель не найден');}
+    if (!user) {
+      throw ApiException.notFound('Преподаватель не найден');
+    }
 
     await user.update(dto);
     await user.save();
@@ -60,13 +65,15 @@ export class ProfessorsService {
           model: User,
           as: 'user',
           attributes: ['email', 'fullName'],
-          where: search ?{
-            role: ROLE.PROFESSOR, //TODO возможно это не требуется
-            [Op.or]: [
-              { email: { [Op.iLike]: `%${search}%` } }, // Для PostgreSQL, нечувствительно к регистру
-              { fullName: { [Op.iLike]: `%${search}%` } },
-            ],
-          } : {},
+          where: search
+            ? {
+                role: ROLE.PROFESSOR, //TODO возможно это не требуется
+                [Op.or]: [
+                  { email: { [Op.iLike]: `%${search}%` } }, // Для PostgreSQL, нечувствительно к регистру
+                  { fullName: { [Op.iLike]: `%${search}%` } },
+                ],
+              }
+            : {},
         },
       ],
       ...(!search ? { limit, offset: limit * (page - 1) } : {}),
@@ -83,18 +90,20 @@ export class ProfessorsService {
           model: User,
           as: 'user',
           attributes: ['email', 'fullName'],
-          where: search ?{
-            role: ROLE.PROFESSOR, //TODO возможно это не требуется
-            [Op.or]: [
-              { email: { [Op.iLike]: `%${search}%` } }, // Для PostgreSQL, нечувствительно к регистру
-              { fullName: { [Op.iLike]: `%${search}%` } },
-            ],
-          } : {},
+          where: search
+            ? {
+                role: ROLE.PROFESSOR, //TODO возможно это не требуется
+                [Op.or]: [
+                  { email: { [Op.iLike]: `%${search}%` } }, // Для PostgreSQL, нечувствительно к регистру
+                  { fullName: { [Op.iLike]: `%${search}%` } },
+                ],
+              }
+            : {},
         },
       ],
     });
 
-    return data.map((p) => ({ id: p.id, name: p.user.fullName, email: p.user.email }));
+    return data.map(p => ({ id: p.id, name: p.user.fullName, email: p.user.email }));
   }
 
   async getId(userId: string) {

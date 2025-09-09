@@ -1,11 +1,5 @@
-import {
-  BelongsToMany,
-  Column,
-  CreatedAt,
-  DataType, Model,
-  Table,
-  UpdatedAt,
-} from 'sequelize-typescript';
+import { BelongsToMany, Column, CreatedAt, DataType, Model, Table, UpdatedAt } from 'sequelize-typescript';
+
 import { Assignment } from './assignment.model';
 import { Group } from './group.model';
 import { Professor } from './professor.model';
@@ -19,31 +13,31 @@ export class Course extends Model<Course> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
+  id: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
-    name: string;
+  name: string;
 
   @Column({ type: DataType.TEXT })
-    description: string | null;
+  description: string | null;
 
   @Column({ type: DataType.STRING, allowNull: true })
-    learning_form: string | null;
+  learning_form: string | null;
 
   @Column({ type: DataType.STRING, allowNull: true })
-    language: string | null;
+  language: string | null;
 
   @Column({ type: DataType.STRING, allowNull: true })
-    assessment_system: string | null;
+  assessment_system: string | null;
 
   @Column({ type: DataType.STRING, allowNull: true })
-    access: string | null;
+  access: string | null;
 
   @CreatedAt
-    createdAt: Date;
+  createdAt: Date;
 
   @UpdatedAt
-    updatedAt: Date;
+  updatedAt: Date;
 
   // new changes
 
@@ -51,12 +45,11 @@ export class Course extends Model<Course> {
     through: () => Assignment,
     as: 'professors',
   })
-    professors: Professor[];
+  professors: Professor[];
 
   @BelongsToMany(() => Group, () => Assignment)
-    groups: Group[];
+  groups: Group[];
 
   @BelongsToMany(() => Semester, () => Assignment)
-    semesters: Semester[];
+  semesters: Semester[];
 }
-

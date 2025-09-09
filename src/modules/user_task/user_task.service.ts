@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+
 import { Op } from 'sequelize';
-import { TasksService } from '../tasks/tasks.service';
-import { TaskStatus } from 'src/common/enum/task';
-import { ApiException } from 'src/common/exceptions/api.exceptions';
 import { Document } from 'src/models/documents.model';
 import { Student } from 'src/models/student.model';
 import { UserTask } from 'src/models/user_task.model';
+
+import { TaskStatus } from 'src/common/enum/task';
+import { ApiException } from 'src/common/exceptions/api.exceptions';
+
+import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
 export class UserTaskService {
@@ -17,7 +20,10 @@ export class UserTaskService {
     private readonly taskService: TasksService,
   ) {}
 
-  async addAnswer(userId: string, { taskId, documentIds = [], answer }: {taskId: string, documentIds: string[], answer?: string}) {
+  async addAnswer(
+    userId: string,
+    { taskId, documentIds = [], answer }: { taskId: string; documentIds: string[]; answer?: string },
+  ) {
     const task = await this.taskService.one(taskId);
     if (!task) {
       throw ApiException.badRequest('Задание не найдено');
@@ -33,7 +39,7 @@ export class UserTaskService {
       },
     });
 
-    if(!userTask) {
+    if (!userTask) {
       throw ApiException.badRequest('Такого ответа не существует');
     }
 
@@ -41,7 +47,7 @@ export class UserTaskService {
       where: { id: { [Op.in]: documentIds } },
     });
 
-    if(answer) {
+    if (answer) {
       await userTask.update({ answer });
     }
 
@@ -50,12 +56,12 @@ export class UserTaskService {
     return { message: 'Ответ успешно сохранен' };
   }
 
-  async find (userId: string, taskId: string, studentId?: string) {
+  async find(userId: string, taskId: string, studentId?: string) {
     console.log({ taskId });
     const task = await this.taskService.one(taskId);
 
     let student = null;
-    if(studentId){
+    if (studentId) {
       student = await this.studentRepository.findOne({
         where: { user_id: userId },
       });
@@ -74,7 +80,7 @@ export class UserTaskService {
       ],
     });
 
-    if(!userTask) {
+    if (!userTask) {
       throw ApiException.badRequest('Запись не найдена');
     }
     return userTask;
@@ -84,7 +90,7 @@ export class UserTaskService {
     const { student_id } = data;
     const task = await this.find(userId, id, student_id);
 
-    if(data.grade > 0) {
+    if (data.grade > 0) {
       data.status = TaskStatus.CLOSED;
     }
 

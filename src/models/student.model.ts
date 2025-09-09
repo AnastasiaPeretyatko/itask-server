@@ -1,11 +1,5 @@
-import {
-  BelongsTo,
-  BelongsToMany,
-  Column,
-  DataType,
-  ForeignKey, Model,
-  Table,
-} from 'sequelize-typescript';
+import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
+
 import { Group } from './group.model';
 import { Task } from './tasks.model';
 import { User } from './user.model';
@@ -19,36 +13,36 @@ export class Student extends Model<Student> {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-    id: string;
+  id: string;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID, field: 'user_id' })
-    user_id: string;
+  user_id: string;
 
   @ForeignKey(() => Group)
   @Column({ type: DataType.UUID, field: 'group_id' })
-    group_id: string;
+  group_id: string;
 
   @Column({ type: DataType.STRING })
-    fullName: string;
+  fullName: string;
 
   @Column({ type: DataType.STRING })
-    tel: string;
+  tel: string;
 
   @BelongsTo(() => Group, {
     foreignKey: 'group_id',
     onDelete: 'CASCADE',
     as: 'group',
   })
-    group: Group;
+  group: Group;
 
   @BelongsTo(() => User, {
     foreignKey: 'user_id',
     onDelete: 'CASCADE',
     as: 'user',
   })
-    user: User;
+  user: User;
 
   @BelongsToMany(() => Task, () => UserTask)
-    tasks: Task[];
+  tasks: Task[];
 }

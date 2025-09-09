@@ -1,17 +1,10 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get, Param,
-  Patch,
-  Post,
-  Query,
-  UsePipes,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+
 import { SemesterDto, SemesterSchema } from './dto/create-semester.dto';
 import { SemestrsService } from './semesters.service';
-import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 // import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 
 @ApiTags('Семестры')
@@ -48,7 +41,7 @@ export class SemestersController {
   }
 
   @Get('/list')
-  async getList(@Query() { search } : {search: string}){
+  async getList(@Query() { search }: { search: string }) {
     return await this.semestrsService.list(search);
   }
 

@@ -1,8 +1,11 @@
 import { Body, Controller, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { UserTaskService } from './user_task.service';
+
 import { UserTask } from 'src/models/user_task.model';
+
+import { UserTaskService } from './user_task.service';
+
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Задачи')
 @Controller('user-task')
@@ -27,5 +30,4 @@ export class UserTaskController {
   async find(@Req() req, @Param('id') id: string, @Body() dto: any) {
     return await this.userTaskService.find(req.user.id, id, dto.studentId);
   }
-
 }

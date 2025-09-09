@@ -1,11 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+import { TaskStatus } from 'src/common/enum/task';
+import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+
 import { CreateTaskDto, CreateTaskSchema } from './dto/create-task.dto';
 import { GetAllTaskDto, GetAllTaskSchema } from './dto/getAll.dto';
 import { TasksService } from './tasks.service';
-import { TaskStatus } from 'src/common/enum/task';
-import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
+
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Задачи')
 @Controller('tasks')
@@ -14,7 +17,7 @@ export class TasksController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async create(@Req () req, @Body(new ZodValidationPipe(CreateTaskSchema)) dto: CreateTaskDto) {
+  async create(@Req() req, @Body(new ZodValidationPipe(CreateTaskSchema)) dto: CreateTaskDto) {
     return await this.taskService.create(req.user.id, dto);
   }
 
@@ -25,7 +28,7 @@ export class TasksController {
   }
 
   @Get('/student/:id')
-  async getTasksForStudent(@Param('id') id: string, @Query() query: {month: string}) {
+  async getTasksForStudent(@Param('id') id: string, @Query() query: { month: string }) {
     return await this.taskService.getTasksForStudent(id, query?.month);
   }
 

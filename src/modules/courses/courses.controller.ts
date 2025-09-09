@@ -1,27 +1,18 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UsePipes,
-  Query,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CoursesService } from './courses.service';
-import { CreateCourseDto, CreateCourseSchema } from './dto/create-course.dto';
+
 import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 import { PaginationDto } from 'src/common/validation/pagination';
+
+import { CreateCourseDto, CreateCourseSchema } from './dto/create-course.dto';
+import { CoursesService } from './courses.service';
+
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Курсы')
 @Controller('courses')
 export class CoursesController {
-  constructor(private coursesService: CoursesService) { }
+  constructor(private coursesService: CoursesService) {}
 
   @Post()
   @UsePipes(new ZodValidationPipe(CreateCourseSchema))
@@ -43,7 +34,10 @@ export class CoursesController {
   @UseGuards(JwtAuthGuard)
   @Get()
   // @UsePipes(new ZodValidationPipe(PaginationSchema))
-  async getAll(@Req() req, @Query() query: PaginationDto & { groupId?: string, semesterId?: string, courseId?: string }) {
+  async getAll(
+    @Req() req,
+    @Query() query: PaginationDto & { groupId?: string; semesterId?: string; courseId?: string },
+  ) {
     return await this.coursesService.getAll(req.user.id, query);
   }
 
@@ -54,10 +48,15 @@ export class CoursesController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/students')
-  async getStudentsAndTask(@Param('id') courseId: string, @Req() req, @Body() dto: {
-      semesterId: string,
-      groupId: string
-    }) {
+  async getStudentsAndTask(
+    @Param('id') courseId: string,
+    @Req() req,
+    @Body()
+    dto: {
+      semesterId: string;
+      groupId: string;
+    },
+  ) {
     return await this.coursesService.getStudentsAndTask(courseId, dto.semesterId, dto.groupId);
   }
 

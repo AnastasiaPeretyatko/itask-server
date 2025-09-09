@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { UsersService } from '../users/users.service';
-import { ProfessorsController } from './professors.controller';
-import { ProfessorsService } from './professors.service';
+
 import { Professor } from 'src/models/professor.model';
 import { User } from 'src/models/user.model';
+
+import { ProfessorsController } from './professors.controller';
+import { ProfessorsService } from './professors.service';
+
+import { UsersService } from '../users/users.service';
 
 @Module({
   controllers: [ProfessorsController],

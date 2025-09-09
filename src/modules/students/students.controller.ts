@@ -1,20 +1,14 @@
-import {
-  Body,
-  Controller,
-  Get, Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  UsePipes,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { UsersService } from '../users/users.service';
-import { StudentDto, StudentSchema } from './dto/create-student.dto';
-import { StudentsService } from './students.service';
+
 import { ROLE } from 'src/common/enum/role';
 import { ZodValidationPipe } from 'src/common/utils/zod-validation.pipe';
 import { PaginationDto, PaginationSchema } from 'src/common/validation/pagination';
+
+import { StudentDto, StudentSchema } from './dto/create-student.dto';
+import { StudentsService } from './students.service';
+
+import { UsersService } from '../users/users.service';
 
 @ApiTags('Группы')
 @Controller('students')
