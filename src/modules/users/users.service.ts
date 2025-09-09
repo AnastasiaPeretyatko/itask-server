@@ -22,7 +22,7 @@ export class UsersService {
     const candidate = await this.find({ email });
 
     if (candidate) {
-      throw ApiException.badRequest(`Пользователь с почтовым адресом ${email} уже существует`);
+      throw ApiException.badRequest(`Пользователь уже существует`);
     }
 
     const hashPassword = await this.userRepository.hashPassword('Hello');
