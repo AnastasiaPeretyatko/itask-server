@@ -81,7 +81,7 @@ export class AssigmentService {
 
     if (!assignment.professorId) {
       assignment.professorId = professorId;
-      assignment.save();
+      await assignment.save();
       return { data: assignment, message: 'Связь обновлена' };
     }
   }
@@ -97,7 +97,7 @@ export class AssigmentService {
 
     if (!assignment.semesterId) {
       assignment.semesterId = semesterId;
-      assignment.save();
+      await assignment.save();
       return { data: assignment, message: 'Связь обновлена' };
     }
   }
@@ -217,6 +217,7 @@ export class AssigmentService {
       }
 
       return acc;
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     }, [] as Assignment[]);
 
     return exists.map(el => el.course);

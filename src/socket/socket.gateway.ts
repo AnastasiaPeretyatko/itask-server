@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -26,11 +27,11 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     const user = userLeaveRoom(client.id);
 
     if (user) {
-      client.leave(user.roomId);
+      await client.leave(user.roomId);
       client.broadcast.to(user.roomId).emit('status', {
         userId: user.id,
         status: 'offline',
@@ -50,10 +51,10 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(client: Socket, data: { username: string; roomId: string }) {
+  async handleJoinRoom(client: Socket, data: { username: string; roomId: string }) {
     const userId = client.handshake.query.userId as string;
     const user = userJoinRoom({ id: userId, ...data, socketId: client.id });
-    client.join(data.roomId);
+    await client.join(data.roomId);
 
     // client.broadcast
     //   .to(data.roomId)

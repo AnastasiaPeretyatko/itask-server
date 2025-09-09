@@ -65,8 +65,8 @@ export class GroupsService {
       throw ApiException.badRequest('Группа не найдена');
     }
 
-    group.update(dto);
-    group.save();
+    await group.update(dto);
+    await group.save();
 
     return {
       data: await this.getOne(id),
