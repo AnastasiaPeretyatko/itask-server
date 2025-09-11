@@ -15,7 +15,7 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Создание пользователя' })
   @ApiResponse({ status: 201, type: User })
-  @ApiResponse({ status: 400, description: 'Пользователь с почтовым адресом user@user.ru уже существует' })
+  @ApiResponse({ status: 400, description: 'Пользователь уже существует' })
   @Post()
   create(@Body() dto: CreateUserDto) {
     return this.usersService.create(dto);
